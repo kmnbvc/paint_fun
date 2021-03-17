@@ -44,7 +44,7 @@ class MongoTailoredCursorApp @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     }
   }
 
-  def index = Action { Ok(views.html.index()) }
+  def whiteboard = Action { Ok(views.html.whiteboard()) }
 
   implicit val jsObjFrame = WebSocket.FrameFormatter.jsonFrame.
     transform[JsObject]({ obj: JsObject => obj: JsValue }, {
