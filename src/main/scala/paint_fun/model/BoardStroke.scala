@@ -1,6 +1,7 @@
 package paint_fun.model
 
 import cats.Applicative
+import io.circe.jawn.decode
 import io.circe._
 import io.circe.generic.semiauto._
 import io.circe.syntax._
@@ -21,11 +22,13 @@ object BoardStroke {
   implicit def boardStrokeEntityEncoder[F[_] : Applicative]: EntityEncoder[F, BoardStroke] = jsonEncoderOf
   implicit def boardsListStrokeEntityEncoder[F[_] : Applicative]: EntityEncoder[F, List[BoardStroke]] = jsonEncoderOf
 
-  private def toJson(stroke: BoardStroke): String = stroke.asJson.noSpaces
+  def toJson(stroke: BoardStroke): String = stroke.asJson.noSpaces
+  def fromJson(text: String): BoardStroke = decode(text).right.get
 }
 
 object BoardStrokeData {
   implicit val jsonCodec: Codec[BoardStrokeData] = deriveCodec
 
-  private def toJson(data: BoardStrokeData): String = data.asJson.noSpaces
+  def toJson(data: BoardStrokeData): String = data.asJson.noSpaces
+  def fromJson(text: String): BoardStrokeData = decode(text).right.get
 }

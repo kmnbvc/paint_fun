@@ -3,6 +3,7 @@ val CirceVersion = "0.13.0"
 val MunitVersion = "0.7.20"
 val LogbackVersion = "1.2.3"
 val MunitCatsEffectVersion = "0.13.0"
+val Redis4catsVersion = "0.12.0"
 
 lazy val root = (project in file("."))
   .enablePlugins(SbtTwirl)
@@ -18,12 +19,15 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-twirl" % Http4sVersion,
       "io.circe" %% "circe-generic" % CirceVersion,
       "io.circe" %% "circe-parser" % CirceVersion,
+      "com.typesafe" % "config" % "1.4.1",
       "org.scalameta" %% "munit" % MunitVersion % Test,
       "org.typelevel" %% "munit-cats-effect-2" % MunitCatsEffectVersion % Test,
       "ch.qos.logback" % "logback-classic" % LogbackVersion
     ),
     libraryDependencies ++= Seq(
-      "org.reactivemongo" %% "reactivemongo" % "1.0.3"
+      "dev.profunktor" %% "redis4cats-streams" % Redis4catsVersion,
+      "dev.profunktor" %% "redis4cats-log4cats" % Redis4catsVersion,
+      "org.typelevel" %% "log4cats-slf4j" % "1.2.0"
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"),
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
