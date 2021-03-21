@@ -10,6 +10,7 @@ import org.http4s.server.staticcontent.{ResourceService, resourceService}
 import org.http4s.server.websocket.WebSocketBuilder
 import org.http4s.twirl._
 import org.http4s.websocket.WebSocketFrame
+import org.slf4j.LoggerFactory
 import paint_fun.model.BoardStroke
 import paint_fun.persistence.WhiteboardRepo
 
@@ -18,6 +19,8 @@ import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
 
 object PaintFunRoutes {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def whiteboardRoutes[F[_] : Sync](repo: WhiteboardRepo[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
@@ -29,12 +32,20 @@ object PaintFunRoutes {
       case GET -> Root / UUIDVar(id) => Ok(html.whiteboard(id.toString))
 
       case GET -> Root / "ws" / UUIDVar(id) =>
-        val send: Stream[F, WebSocketFrame] = repo.strokes(id.toString).map(s => WebSocketFrame.Text(s.data.toString))
+        val send: Stream[F, WebSocketFrame] = repo.strokes(id.toString)
+          .map(_.toString)
+          .map(WebSocketFrame.Text(_))
         val receive: Pipe[F, WebSocketFrame, Unit] = stream => {
-          val in = stream.map {
-            case WebSocketFrame.Text(str, _) => BoardStroke.fromJson(str)
+          val in = stream.flatMap {
+            case WebSocketFrame.Text(str, _) =>
+              BoardStroke.fromJson(str) match {
+                case Left(err) =>
+                  logger.error(str, err)
+                  Stream.empty
+                case Right(value) => Stream(value)
+              }
           }
-          repo.save(in).showLinesStdOut
+          repo.save(in).drain
         }
 
         WebSocketBuilder[F].build(send, receive)

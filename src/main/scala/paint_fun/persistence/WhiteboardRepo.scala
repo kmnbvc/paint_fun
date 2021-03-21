@@ -38,10 +38,17 @@ class WhiteboardRepoImpl[F[_]](implicit
   override def strokes(boardId: String): Stream[F, BoardStroke] = {
     Stream.resource(streaming).flatMap(s =>
       s.read(Set(redisConfig.streamKey))
-        .filter(msg => msg.body.keySet == Set(boardId))
-        .flatMap(msg => Stream.iterable(msg.body.map {
-          case (id, data) => BoardStroke(id, BoardStrokeData.fromJson(data))
-        })))
+        .filter(msg => msg.body.contains(boardId))
+        .flatMap(msg => Stream.iterable(
+          msg.body.toList.flatMap {
+            case (id, data) =>
+              BoardStrokeData.fromJson(data) match {
+                case Left(err) =>
+                  logger.error(err)(err.getMessage)
+                  Nil
+                case Right(value) => List(BoardStroke(id, value))
+              }
+          })))
   }
 
   override def save(in: Stream[F, BoardStroke]): Stream[F, String] = {

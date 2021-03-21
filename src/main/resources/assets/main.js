@@ -10,8 +10,8 @@
     }
 
     const send = function (data) {
-        const id = $('.whiteboard').data('id')
-        connection.send(JSON.stringify({id, data}));
+        const whiteboardId = $('.whiteboard').data('id')
+        connection.send(JSON.stringify({whiteboardId, data}));
     }
 
     const connectionUrl = function () {
