@@ -5,7 +5,7 @@ import dev.profunktor.redis4cats.connection.RedisClient
 import dev.profunktor.redis4cats.data.RedisCodec
 import dev.profunktor.redis4cats.log4cats._
 import dev.profunktor.redis4cats.streams.RedisStream
-import dev.profunktor.redis4cats.streams.data.XAddMessage
+import dev.profunktor.redis4cats.streams.data.{XAddMessage, XReadMessage}
 import fs2._
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -36,27 +36,33 @@ class WhiteboardRepoImpl[F[_]](implicit
     RedisStream.mkStreamingConnectionResource(client, codec))
 
   override def strokes(boardId: String): Stream[F, BoardStroke] = {
-    Stream.resource(streaming).flatMap(s =>
-      s.read(Set(redisConfig.streamKey))
-        .filter(msg => msg.body.contains(boardId))
-        .flatMap(msg => Stream.iterable(
-          msg.body.toList.flatMap {
-            case (id, data) =>
-              BoardStrokeData.fromJson(data) match {
-                case Left(err) =>
-                  logger.error(err)(err.getMessage)
-                  Nil
-                case Right(value) => List(BoardStroke(id, value))
-              }
-          })))
+    for {
+      streaming <- Stream.resource(streaming)
+      msg <- streaming.read(Set(redisConfig.streamKey)) if msg.body.contains(boardId)
+      stroke <- fromReadMessage(msg)
+    } yield stroke
   }
 
   override def save(in: Stream[F, BoardStroke]): Stream[F, String] = {
-    Stream.resource(streaming).flatMap { s =>
-      val pipe = s.append
-      in.map(stroke => XAddMessage(redisConfig.streamKey, Map(stroke.whiteboardId -> stroke.data.toString)))
-        .through(pipe)
-        .map(_.value)
-    }
+    for {
+      streaming <- Stream.resource(streaming)
+      pipe = streaming.append
+      msgs = in.map(addMessage)
+      res <- msgs.through(pipe)
+    } yield res.value
+  }
+
+  private def addMessage(stroke: BoardStroke): XAddMessage[String, String] = {
+    XAddMessage(redisConfig.streamKey, Map(stroke.whiteboardId -> stroke.data.toJson))
+  }
+
+  private def fromReadMessage(msg: XReadMessage[String, String]): Stream[F, BoardStroke] = {
+    for {
+      (id, json) <- Stream.iterable(msg.body)
+      data <- BoardStrokeData.fromJson(json) match {
+        case Left(ex) => logger.error(ex)(ex.getMessage); Stream.empty
+        case Right(value) => Stream(value)
+      }
+    } yield BoardStroke(id, data)
   }
 }

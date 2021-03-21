@@ -33,18 +33,18 @@ object PaintFunRoutes {
 
       case GET -> Root / "ws" / UUIDVar(id) =>
         val send: Stream[F, WebSocketFrame] = repo.strokes(id.toString)
-          .map(_.toString)
+          .map(_.toJson)
           .map(WebSocketFrame.Text(_))
         val receive: Pipe[F, WebSocketFrame, Unit] = stream => {
-          val in = stream.flatMap {
-            case WebSocketFrame.Text(str, _) =>
-              BoardStroke.fromJson(str) match {
-                case Left(err) =>
-                  logger.error(str, err)
-                  Stream.empty
-                case Right(value) => Stream(value)
-              }
-          }
+          val in = for {
+            frame <- stream if frame.isInstanceOf[WebSocketFrame.Text]
+            json = frame.asInstanceOf[WebSocketFrame.Text].str
+            stroke <- BoardStroke.fromJson(json) match {
+              case Left(ex) => logger.error(ex.getMessage, ex); Stream.empty
+              case Right(value) => Stream(value)
+            }
+          } yield stroke
+
           repo.save(in).drain
         }
 
