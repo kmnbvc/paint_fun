@@ -9,7 +9,7 @@ import dev.profunktor.redis4cats.streams.data.{XAddMessage, XReadMessage}
 import fs2._
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import paint_fun.config.redisConfig
+import paint_fun.config
 import paint_fun.model.{BoardStroke, BoardStrokeData}
 
 trait WhiteboardRepo[F[_]] {
@@ -31,14 +31,15 @@ class WhiteboardRepoImpl[F[_]](implicit
   implicit val logger: Logger[F] = Slf4jLogger.getLogger[F]
 
   private val codec = RedisCodec.Utf8
+  private val cfg = config.redisConfig
 
-  private lazy val streaming = RedisClient[F].from(redisConfig.url).flatMap(client =>
+  private lazy val streaming = RedisClient[F].from(cfg.url).flatMap(client =>
     RedisStream.mkStreamingConnectionResource(client, codec))
 
   override def strokes(boardId: String): Stream[F, BoardStroke] = {
     for {
       streaming <- Stream.resource(streaming)
-      msg <- streaming.read(Set(redisConfig.streamKey)) if msg.body.contains(boardId)
+      msg <- streaming.read(Set(cfg.streamKey)) if msg.body.contains(boardId)
       stroke <- fromReadMessage(msg)
     } yield stroke
   }
@@ -53,7 +54,7 @@ class WhiteboardRepoImpl[F[_]](implicit
   }
 
   private def addMessage(stroke: BoardStroke): XAddMessage[String, String] = {
-    XAddMessage(redisConfig.streamKey, Map(stroke.whiteboardId -> stroke.data.toJson))
+    XAddMessage(cfg.streamKey, Map(stroke.whiteboardId -> stroke.data.toJson))
   }
 
   private def fromReadMessage(msg: XReadMessage[String, String]): Stream[F, BoardStroke] = {

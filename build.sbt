@@ -23,6 +23,14 @@ val redisDependencies = Seq(
   "org.typelevel" %% "log4cats-slf4j" % "1.2.0",
 )
 
+val doobieDependencies = Seq(
+  "org.tpolecat" %% "doobie-core" % "0.10.0",
+  "org.tpolecat" %% "doobie-h2" % "0.10.0",
+  "org.tpolecat" %% "doobie-hikari" % "0.10.0",
+  "org.tpolecat" %% "doobie-specs2" % "0.10.0",
+  "com.h2database" % "h2" % "1.4.200"
+)
+
 val testScopeDependencies = Seq(
   "org.scalameta" %% "munit" % MunitVersion % Test,
   "org.typelevel" %% "munit-cats-effect-2" % MunitCatsEffectVersion % Test,
@@ -43,6 +51,7 @@ lazy val root = (project in file("."))
       http4sDependencies,
       circeDependencies,
       redisDependencies,
+      doobieDependencies,
       testScopeDependencies).flatten,
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"),
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
