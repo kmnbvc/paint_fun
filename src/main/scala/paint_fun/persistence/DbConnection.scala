@@ -1,6 +1,6 @@
 package paint_fun.persistence
 
-import cats.effect.{Blocker, ContextShift, ExitCase, IO, Resource}
+import cats.effect.{Async, Blocker, ContextShift, Resource}
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
@@ -10,28 +10,27 @@ import paint_fun.config
 
 import scala.concurrent.ExecutionContext
 
-trait DbConnection {
+abstract class DbConnection[F[_]](implicit async: Async[F], cs: ContextShift[F]) {
 
   val logger: Logger
   private val cfg = config.dbConfig
 
-  lazy val transactor: Resource[IO, HikariTransactor[IO]] = {
+  lazy val transactor: Resource[F, HikariTransactor[F]] = {
     for {
-      ec <- ExecutionContexts.fixedThreadPool[IO](cfg.threadPoolSize)
-      be <- Blocker[IO]
-      xa <- createTransactor(ec, be, IO.contextShift(ec))
+      ec <- ExecutionContexts.fixedThreadPool[F](cfg.threadPoolSize)
+      be <- Blocker[F]
+      xa <- createTransactor(ec, be)
     } yield xa
   }
 
-  private def createTransactor(ec: ExecutionContext, be: Blocker, cs: ContextShift[IO]): Resource[IO, HikariTransactor[IO]] = {
-    implicit val ctxShift: ContextShift[IO] = cs
-    HikariTransactor.newHikariTransactor[IO](cfg.driver, cfg.connectionUrl, cfg.username, cfg.password, ec, be)
+  private def createTransactor(ec: ExecutionContext, be: Blocker): Resource[F, HikariTransactor[F]] = {
+    HikariTransactor.newHikariTransactor[F](cfg.driver, cfg.connectionUrl, cfg.username, cfg.password, ec, be)
   }
 
-  def transact[T](statement: => ConnectionIO[T]): IO[T] =
+  def transact[T](statement: => ConnectionIO[T]): F[T] =
     transactor.use(xa => statement.transact(xa))
-      .guaranteeCase {
-        case ExitCase.Error(e) => IO(logger.error(e.getMessage, e))
-        case _ => IO.unit
-      }
+  //      .guaranteeCase {
+  //        case ExitCase.Error(e) => IO(logger.error(e.getMessage, e))
+  //        case _ => IO.unit
+  //      }
 }
