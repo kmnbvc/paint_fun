@@ -1,6 +1,6 @@
 @(id: String)
 
-@main("Whiteboard") {
+@html.main("Whiteboard") {
     <canvas class="whiteboard" data-id="@id"></canvas>
 
     <div class="colors">
@@ -10,4 +10,6 @@
         <div class="color blue"></div>
         <div class="color yellow"></div>
     </div>
+
+    @html.login()
 }

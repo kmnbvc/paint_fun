@@ -26,10 +26,10 @@ object WhiteboardRoutes {
     HttpRoutes.of[F] {
       case GET -> Root => SeeOther(`Location`(uri"/" / randomUUID().toString))
 
-      case GET -> Root / UUIDVar(id) => Ok(html.whiteboard(id.toString))
+      case GET -> Root / id => Ok(html.whiteboard(id))
 
-      case GET -> Root / "ws" / UUIDVar(id) =>
-        val send: Stream[F, WebSocketFrame] = repo.strokes(id.toString)
+      case GET -> Root / "ws" / id =>
+        val send: Stream[F, WebSocketFrame] = repo.strokes(id)
           .map(_.toJson)
           .map(WebSocketFrame.Text(_))
         val receive: Pipe[F, WebSocketFrame, Unit] = stream => {

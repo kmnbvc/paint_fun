@@ -134,3 +134,44 @@
         canvas.height = window.innerHeight;
     }
 })();
+
+$(document).ready(function () {
+    $('.modal').modal()
+});
+
+$('#userRegBtn').on('click', function (e) {
+    $('#loginModal .modal-content').toggleClass('hide')
+})
+
+$('#loginModal #submitBtn').on('click', function (e) {
+    $('#loginModal form:visible').submit()
+})
+
+$("#loginForm").submit(function (event) {
+    event.preventDefault();
+    const data = $(this).serialize();
+
+    $.post("/user/login", data).done(function () {
+        console.log("second success");
+    }).fail(function () {
+        console.log("error");
+    }).always(function () {
+        console.log("finished");
+    });
+});
+
+$("#userRegForm").submit(function (event) {
+    event.preventDefault();
+    const data = JSON.stringify(Object.fromEntries(new FormData(this)));
+
+    $.post("/user/create", data).done(function (event) {
+        console.log(event.responseText);
+        console.log("second success");
+    }).fail(function (event) {
+        console.log(event.responseText);
+        console.log("error");
+    }).always(function (event) {
+        console.log(event.responseText);
+        console.log("finished");
+    });
+});

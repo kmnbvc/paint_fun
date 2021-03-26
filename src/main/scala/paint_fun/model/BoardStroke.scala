@@ -20,8 +20,8 @@ final case class BoardStrokeData(x0: Double, y0: Double, x1: Double, y1: Double,
 object BoardStroke {
   implicit val jsonCodec: Codec[BoardStroke] = deriveCodec
 
-  implicit def boardStrokeEntityEncoder[F[_] : Applicative]: EntityEncoder[F, BoardStroke] = jsonEncoderOf
-  implicit def boardsListStrokeEntityEncoder[F[_] : Applicative]: EntityEncoder[F, List[BoardStroke]] = jsonEncoderOf
+  implicit def entityEncoder[F[_] : Applicative]: EntityEncoder[F, BoardStroke] = jsonEncoderOf
+  implicit def listEntityEncoder[F[_] : Applicative]: EntityEncoder[F, List[BoardStroke]] = jsonEncoderOf
 
   def fromJson(text: String): Either[Exception, BoardStroke] = decode(text)
 }
