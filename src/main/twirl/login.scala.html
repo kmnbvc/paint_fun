@@ -2,61 +2,65 @@
 
 <div class="right">
     <a class="waves-effect waves-light btn modal-trigger" href="#loginModal">Sign in</a>
+</div>
 
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <h4>Sign in</h4>
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <h4>Login</h4>
+        <div class="row">
+            <form id="loginForm" class="col s12">
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="login" name="login" type="text" class="validate">
+                        <label for="login">Login</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="password" name="password" type="password" class="validate">
+                        <label for="password">Password</label>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a id="userRegBtn" href="#!" class="waves-effect btn left btn-flat">Register</a>
+        <a id="submitBtn" href="#!" class="waves-effect btn">Submit</a>
+    </div>
+</div>
 
-            <div class="row">
-                <form id="loginForm" class="col s12">
-                    <div class="row">
-                        <div class="input-field col s12">
-                            <input id="login" name="login" type="text" class="validate">
-                            <label for="login">Login</label>
-                        </div>
+<div id="userRegModal" class="modal">
+    <div class="modal-content">
+        <h4>Register</h4>
+        <div class="row">
+            <form id="userRegForm" class="col s12">
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="userRegName" name="name" type="text" class="validate">
+                        <label for="userRegName">Name</label>
+                        <span class="helper-text">Your display name. Required, up to 64 characters.</span>
                     </div>
-                    <div class="row">
-                        <div class="input-field col s12">
-                            <input id="password" name="password" type="password" class="validate">
-                            <label for="password">Password</label>
-                        </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="userRegLogin" name="login" type="text" class="validate">
+                        <label for="userRegLogin">Login</label>
+                        <span class="helper-text">Your login. Required, unique, up to 36 caracters, only 'a-z' letters.</span>
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="userRegPassword" name="password" type="password" class="validate">
+                        <label for="userRegPassword">Password</label>
+                        <span class="helper-text">Your password. Required.</span>
+                    </div>
+                </div>
+            </form>
         </div>
-        <div class="modal-content hide">
-            <h4>Sign up</h4>
-
-            <div class="row">
-                <form id="userRegForm" class="col s12">
-                    <div class="row">
-                        <div class="input-field col s12">
-                            <input id="name" name="name" type="text" class="validate">
-                            <label for="name">Name</label>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="input-field col s12">
-                            <input id="login" name="login" type="text" class="validate">
-                            <label for="login">Login</label>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="input-field col s12">
-                            <input id="password" name="password" type="password" class="validate">
-                            <label for="password">Password</label>
-                        </div>
-                        <div class="input-field col s12">
-                            <input id="password" type="password" class="validate">
-                            <label for="password">Repeat password</label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <a id="userRegBtn" href="#!" class="waves-effect btn left btn-flat">Not registered yet?</a>
-            <a id="submitBtn" href="#!" class="waves-effect btn">Submit</a>
-        </div>
+    </div>
+    <div class="modal-footer">
+        <a id="loginBtn" href="#!" class="waves-effect btn left btn-flat">Login</a>
+        <a id="submitBtn" href="#!" class="waves-effect btn">Submit</a>
     </div>
 </div>

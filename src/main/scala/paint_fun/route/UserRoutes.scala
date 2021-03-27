@@ -22,7 +22,7 @@ object UserRoutes {
       case req@POST -> Root / "user" / "create" => for {
         user <- req.as[User]
         result <- repo.save(user)
-        resp <- result.fold(UnprocessableEntity(_), Ok(_))
+        resp <- result.fold(errs => UnprocessableEntity(errs.groupMap(_.field.name)(_.name)), Ok(_))
       } yield resp
 
       case DELETE -> Root / "user" / login => Ok(repo.delete(login))

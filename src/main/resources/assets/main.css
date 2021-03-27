@@ -48,3 +48,7 @@ html, body {
 .color.yellow {
     background-color: yellow;
 }
+
+.modal {
+    max-height: 90% !important;
+}

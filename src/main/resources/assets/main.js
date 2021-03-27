@@ -136,42 +136,57 @@
 })();
 
 $(document).ready(function () {
-    $('.modal').modal()
+    M.AutoInit();
 });
 
-$('#userRegBtn').on('click', function (e) {
-    $('#loginModal .modal-content').toggleClass('hide')
+$('#userRegBtn').click(e => {
+    $('#loginModal').modal('close')
+    $('#userRegModal').modal('open')
 })
 
-$('#loginModal #submitBtn').on('click', function (e) {
-    $('#loginModal form:visible').submit()
+$('#loginBtn').click(e => {
+    $('#userRegModal').modal('close')
+    $('#loginModal').modal('open')
 })
 
-$("#loginForm").submit(function (event) {
-    event.preventDefault();
-    const data = $(this).serialize();
+$('#loginModal #submitBtn').click(e => $('#loginForm').submit())
+$('#userRegModal #submitBtn').click(e => $('#userRegForm').submit())
 
-    $.post("/user/login", data).done(function () {
-        console.log("second success");
-    }).fail(function () {
-        console.log("error");
-    }).always(function () {
-        console.log("finished");
-    });
-});
+$("#loginForm").submit(event => {
+    event.preventDefault()
+    const data = JSON.stringify(Object.fromEntries(new FormData(event.target)))
 
-$("#userRegForm").submit(function (event) {
-    event.preventDefault();
-    const data = JSON.stringify(Object.fromEntries(new FormData(this)));
+    const loginDone = resp => {
+        console.log(resp)
+    }
 
-    $.post("/user/create", data).done(function (event) {
-        console.log(event.responseText);
-        console.log("second success");
-    }).fail(function (event) {
-        console.log(event.responseText);
-        console.log("error");
-    }).always(function (event) {
-        console.log(event.responseText);
-        console.log("finished");
-    });
+    const loginFail = resp => {
+        console.log(resp)
+    }
+
+    $.post("/user/login", data).done(loginDone).fail(loginFail)
+})
+
+$("#userRegForm").submit(event => {
+    event.preventDefault()
+    const data = JSON.stringify(Object.fromEntries(new FormData(event.target)))
+
+    const regDone = resp => {
+        $('#userRegModal').modal('close')
+        M.toast({html: `User created. Hello ${resp.name}!`})
+    }
+
+    const regFail = resp => {
+        const errors = resp.responseJSON
+        if (resp.status === 422 && typeof errors !== 'undefined') {
+            $('#userRegForm input').each((idx, item) => {
+                const failed = typeof errors[item.name] !== 'undefined'
+                $(item).toggleClass('invalid', failed).toggleClass('valid', !failed)
+            })
+        } else {
+            M.toast({html: `Error ${resp.status}: ${resp.responseText}`})
+        }
+    }
+
+    $.post("/user/create", data).done(regDone).fail(regFail)
 });
