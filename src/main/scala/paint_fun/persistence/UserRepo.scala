@@ -10,7 +10,6 @@ import paint_fun.model._
 trait UserRepo[F[_]] {
   def save(user: User): F[AllErrorsOr[User]]
   def find(login: String): F[Option[User]]
-  def delete(login: String): F[Boolean]
 }
 
 object UserRepo {
@@ -31,14 +30,10 @@ class UserRepoImpl[F[_]](implicit
   }
 
   private def insert(user: User): F[User] = transact {
-    sql"insert into paint_fun.users (login, name) values(${user.login}, ${user.name})".update.run.as(user)
+    sql"insert into paint_fun.users (login, name, password_hash) values(${user.login}, ${user.name}, ${"justpwd"})".update.run.as(user)
   }
 
   def find(login: String): F[Option[User]] = transact {
     sql"select * from paint_fun.users where login = $login".query[User].option
-  }
-
-  def delete(login: String): F[Boolean] = transact {
-    sql"delete from users where login = $login".update.run.map(_ > 0)
   }
 }

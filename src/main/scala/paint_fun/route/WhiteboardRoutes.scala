@@ -24,9 +24,9 @@ object WhiteboardRoutes {
     import dsl._
 
     HttpRoutes.of[F] {
-      case GET -> Root => SeeOther(`Location`(uri"/" / randomUUID().toString))
+      case GET -> Root => SeeOther(`Location`(uri"/b" / randomUUID().toString))
 
-      case GET -> Root / id => Ok(html.whiteboard(id))
+      case GET -> Root / "b" / id => Ok(html.whiteboard(id))
 
       case GET -> Root / "ws" / id =>
         val send: Stream[F, WebSocketFrame] = repo.strokes(id)

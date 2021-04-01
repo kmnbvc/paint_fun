@@ -8,7 +8,8 @@ import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.Http4sDsl
 import paint_fun.model.User
-import paint_fun.persistence.UserRepo
+import paint_fun.persistence.{UserRepo}
+import tsec.authentication.{TSecAuthService, asAuthed}
 
 object UserRoutes {
 
@@ -25,7 +26,23 @@ object UserRoutes {
         resp <- result.fold(errs => UnprocessableEntity(errs.groupMap(_.field.name)(_.name)), Ok(_))
       } yield resp
 
-      case DELETE -> Root / "user" / login => Ok(repo.delete(login))
+      case req@POST -> Root / "user" / "login" => {
+        val user = req.as[User]
+        // todo validate user credentials
+        val token = Auth.createToken()
+        Ok(token.pure[F])
+      }
     }
+  }
+
+  def authedRoutes[F[_] : Sync](auth: MyAuthenticator[F]): HttpRoutes[F] = {
+    val dsl = new Http4sDsl[F] {}
+    import dsl._
+
+    val authedService: auth.AuthService = TSecAuthService {
+      case GET -> Root / "api2" asAuthed user => Ok("api2")
+    }
+
+    auth.routes(authedService)
   }
 }

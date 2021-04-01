@@ -184,7 +184,7 @@ $("#userRegForm").submit(event => {
                 $(item).toggleClass('invalid', failed).toggleClass('valid', !failed)
             })
         } else {
-            M.toast({html: `Error ${resp.status}: ${resp.responseText}`})
+            M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
         }
     }
 
