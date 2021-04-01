@@ -8,8 +8,9 @@ import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.Http4sDsl
 import paint_fun.model.User
-import paint_fun.persistence.{UserRepo}
-import tsec.authentication.{TSecAuthService, asAuthed}
+import paint_fun.persistence.UserRepo
+import tsec.authentication.{AugmentedJWT, TSecAuthService, asAuthed}
+import tsec.mac.jca.HMACSHA256
 
 object UserRoutes {
 
@@ -35,14 +36,14 @@ object UserRoutes {
     }
   }
 
-  def authedRoutes[F[_] : Sync](auth: MyAuthenticator[F]): HttpRoutes[F] = {
+  def authedRoutes[F[_] : Sync](auth: Authenticator[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
 
-    val authedService: auth.AuthService = TSecAuthService {
+    val authedService: TSecAuthService[User, AugmentedJWT[HMACSHA256, User], F] = TSecAuthService {
       case GET -> Root / "api2" asAuthed user => Ok("api2")
     }
 
-    auth.routes(authedService)
+    auth.handler.liftService(authedService)
   }
 }

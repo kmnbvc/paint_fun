@@ -1,23 +1,19 @@
 package paint_fun.route
 
 import cats.data.{Kleisli, OptionT}
-import cats.effect.{IO, Sync}
+import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.JwtAuthMiddleware
 import dev.profunktor.auth.jwt.{JwtAuth, JwtToken}
 import io.circe.jawn.decode
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.AuthMiddleware
-import org.http4s.{AuthedRoutes, HttpRoutes, Request, Response, Status}
+import org.http4s.{AuthedRoutes, Status}
 import paint_fun.model.User
-import paint_fun.persistence.UserRepo
 import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim}
-import tsec.authentication._
-import tsec.common._
 
 import java.time.Instant
 import scala.collection.immutable.Map
-import scala.concurrent.duration.DurationInt
 
 object Auth {
 
@@ -74,11 +70,12 @@ object Auth {
     token
   }
 
-  object manual_pbkdf2 {
-    import javax.crypto._
-    import javax.crypto.spec._
+  object pbkdf2 {
+
     import java.security._
     import java.util._
+    import javax.crypto._
+    import javax.crypto.spec._
 
     val DefaultIterations = 10000
     val random = new SecureRandom()

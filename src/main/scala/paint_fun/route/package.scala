@@ -12,7 +12,7 @@ package object route {
   def routes[F[_] : Concurrent : ContextShift](
                                                 boardRepo: WhiteboardRepo[F],
                                                 userRepo: UserRepo[F],
-                                                authenticator: MyAuthenticator[F]
+                                                authenticator: Authenticator[F]
                                               ): HttpRoutes[F] = {
     assets <+> whiteboardRoutes(boardRepo) <+> userRoutes(userRepo) <+> authedRoutes(authenticator)
   }
