@@ -21,7 +21,6 @@ object BoardStroke {
   implicit val jsonCodec: Codec[BoardStroke] = deriveCodec
 
   implicit def entityEncoder[F[_] : Applicative]: EntityEncoder[F, BoardStroke] = jsonEncoderOf
-  implicit def listEntityEncoder[F[_] : Applicative]: EntityEncoder[F, List[BoardStroke]] = jsonEncoderOf
 
   def fromJson(text: String): Either[Exception, BoardStroke] = decode(text)
 }

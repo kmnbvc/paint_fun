@@ -1,4 +1,4 @@
-package paint_fun.route
+package paint_fun.routes
 
 import cats.effect.{Blocker, ContextShift, Sync}
 import org.http4s.HttpRoutes

@@ -29,8 +29,4 @@ abstract class DbConnection[F[_]](implicit async: Async[F], cs: ContextShift[F])
 
   def transact[T](statement: => ConnectionIO[T]): F[T] =
     transactor.use(xa => statement.transact(xa))
-  //      .guaranteeCase {
-  //        case ExitCase.Error(e) => IO(logger.error(e.getMessage, e))
-  //        case _ => IO.unit
-  //      }
 }

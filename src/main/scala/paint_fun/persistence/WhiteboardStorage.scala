@@ -12,29 +12,29 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import paint_fun.config
 import paint_fun.model.{BoardStroke, BoardStrokeData}
 
-trait WhiteboardRepo[F[_]] {
+trait WhiteboardStorage[F[_]] {
   def strokes(boardId: String): Stream[F, BoardStroke]
   def save(in: Stream[F, BoardStroke]): Stream[F, String]
 }
 
-object WhiteboardRepo {
-  implicit def apply[F[_] : WhiteboardRepo]: WhiteboardRepo[F] = implicitly
+object WhiteboardStorage {
+  implicit def apply[F[_] : WhiteboardStorage]: WhiteboardStorage[F] = implicitly
 
-  def instance[F[_] : Concurrent : ContextShift]: WhiteboardRepo[F] = new WhiteboardRepoImpl[F]
+  def instance[F[_] : Concurrent : ContextShift]: WhiteboardStorage[F] = new WhiteboardStorageImpl[F]
 }
 
-class WhiteboardRepoImpl[F[_]](implicit
-                               concurrent: Concurrent[F],
-                               contextShift: ContextShift[F]
-                              ) extends WhiteboardRepo[F] {
+class WhiteboardStorageImpl[F[_]](implicit
+                                  concurrent: Concurrent[F],
+                                  contextShift: ContextShift[F]
+                                 ) extends WhiteboardStorage[F] {
 
   implicit val logger: Logger[F] = Slf4jLogger.getLogger[F]
 
   private val codec = RedisCodec.Utf8
   private val cfg = config.redisConfig
 
-  private lazy val streaming = RedisClient[F].from(cfg.url).flatMap(client =>
-    RedisStream.mkStreamingConnectionResource(client, codec))
+  private lazy val client = RedisClient[F].from(cfg.url)
+  private lazy val streaming = client.flatMap(RedisStream.mkStreamingConnectionResource(_, codec))
 
   override def strokes(boardId: String): Stream[F, BoardStroke] = {
     for {

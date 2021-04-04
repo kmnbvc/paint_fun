@@ -157,11 +157,13 @@ $("#loginForm").submit(event => {
     const data = JSON.stringify(Object.fromEntries(new FormData(event.target)))
 
     const loginDone = resp => {
-        console.log(resp)
+        $('#loginModal').modal('close')
+        M.toast({html: `Logged in. Hello!`})
+        userApi.init(resp)
     }
 
     const loginFail = resp => {
-        console.log(resp)
+        M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
     }
 
     $.post("/user/login", data).done(loginDone).fail(loginFail)
@@ -189,4 +191,20 @@ $("#userRegForm").submit(event => {
     }
 
     $.post("/user/create", data).done(regDone).fail(regFail)
-});
+})
+
+const userApi = (function () {
+
+    let token = null
+
+    let init = (_token) => {
+        token = _token
+    }
+
+    let print = () => console.log(token)
+
+    return {
+        init,
+        print
+    }
+})()

@@ -1,20 +1,18 @@
 package paint_fun.model
 
-import cats._
 import cats.implicits._
 import io.circe.Codec
-import io.circe.generic.semiauto.deriveCodec
-import org.http4s.EntityEncoder
-import org.http4s.circe.jsonEncoderOf
+import io.circe.generic.extras.Configuration
+import io.circe.generic.extras.semiauto.deriveConfiguredCodec
 import paint_fun.model.Validation._
 import paint_fun.model.ValidationErrors.AllErrorsOr
 
-final case class User(login: String, name: String, password: String)
+final case class User(login: String, name: String = "", password: String)
 
 object User {
-  implicit val jsonCodec: Codec[User] = deriveCodec
+  implicit val config: Configuration = Configuration.default.withDefaults
 
-  implicit def entityEncoder[F[_] : Applicative]: EntityEncoder[F, User] = jsonEncoderOf
+  implicit val jsonCodec: Codec[User] = deriveConfiguredCodec
 }
 
 object UserValidation {

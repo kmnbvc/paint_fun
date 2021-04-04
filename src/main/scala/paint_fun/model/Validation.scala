@@ -2,7 +2,6 @@ package paint_fun.model
 
 import cats.data.ValidatedNel
 import cats.implicits.catsSyntaxValidatedId
-import io.circe.{Encoder, Json}
 import paint_fun.model.ValidationErrors._
 
 object Validation {
@@ -20,6 +19,7 @@ trait Field {
   def productPrefix: String
   def name: String = productPrefix.toLowerCase
 }
+
 trait ValidationError {
   val field: Field
   def productPrefix: String
@@ -32,6 +32,7 @@ object ValidationErrors {
   final case class Required(field: Field) extends ValidationError
   final case class MaxLengthExceeded(field: Field) extends ValidationError
   final case class InvalidChars(field: Field) extends ValidationError
+  final case class AlreadyExists(field: Field) extends ValidationError
 
   type AllErrorsOr[T] = ValidatedNel[ValidationError, T]
 }

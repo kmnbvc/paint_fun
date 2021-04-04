@@ -10,14 +10,13 @@ val http4sDependencies = Seq(
   "org.http4s" %% "http4s-circe" % Http4sVersion,
   "org.http4s" %% "http4s-dsl" % Http4sVersion,
   "org.http4s" %% "http4s-twirl" % Http4sVersion,
-  "dev.profunktor" %% "http4s-jwt-auth" % "0.0.6",
   "io.github.jmcardon" %% "tsec-http4s" % "0.2.1",
 )
 
 val circeDependencies = Seq(
   "io.circe" %% "circe-generic" % CirceVersion,
   "io.circe" %% "circe-parser" % CirceVersion,
-  "com.github.jwt-scala" %% "jwt-circe" % "7.1.2",
+  "io.circe" %% "circe-generic-extras" % "0.13.0",
 )
 
 val redisDependencies = Seq(

@@ -1,4 +1,4 @@
-package paint_fun.route
+package paint_fun.routes
 
 import cats.effect.Sync
 import fs2.{Pipe, Stream}
@@ -11,7 +11,7 @@ import org.http4s.twirl._
 import org.http4s.websocket.WebSocketFrame
 import org.slf4j.LoggerFactory
 import paint_fun.model.BoardStroke
-import paint_fun.persistence.WhiteboardRepo
+import paint_fun.persistence.WhiteboardStorage
 
 import java.util.UUID.randomUUID
 
@@ -19,8 +19,8 @@ object WhiteboardRoutes {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def whiteboardRoutes[F[_] : Sync](repo: WhiteboardRepo[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F] {}
+  def whiteboardRoutes[F[_] : Sync](repo: WhiteboardStorage[F]): HttpRoutes[F] = {
+    val dsl = Http4sDsl[F]
     import dsl._
 
     HttpRoutes.of[F] {
