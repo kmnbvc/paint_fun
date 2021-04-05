@@ -5,7 +5,7 @@ import io.circe.Codec
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto.deriveConfiguredCodec
 import paint_fun.model.Validation._
-import paint_fun.model.ValidationErrors.AllErrorsOr
+import paint_fun.model.ValidationErrors.{AllErrorsOr, AlreadyExists}
 
 final case class User(login: String, name: String = "", password: String)
 
@@ -29,4 +29,6 @@ object UserValidation {
       name.validate(user.name) *>
       password.validate(user.password)).as(user)
   }
+
+  val loginAlreadyExists: AllErrorsOr[User] = AlreadyExists(Login).invalidNel
 }

@@ -33,8 +33,6 @@ object UserRoutes {
         resp <- if (valid) Ok(Auth.createToken(user).map(_.toEncodedString))
           else Forbidden("Invalid credentials")
       } yield resp
-
-      case GET -> Root / "users" / "all" => Ok(repo.all)
     }
   }
 

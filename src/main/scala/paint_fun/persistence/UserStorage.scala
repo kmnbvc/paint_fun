@@ -1,12 +1,13 @@
 package paint_fun.persistence
 
-import cats.data.{EitherT, OptionT}
-import cats.effect.{Async, ContextShift, IO}
+import cats.data.OptionT
+import cats.data.Validated.{Invalid, Valid}
+import cats.effect.{Async, ContextShift}
 import cats.implicits._
-import doobie.ConnectionIO
 import doobie.implicits._
 import org.slf4j.{Logger, LoggerFactory}
-import paint_fun.model.ValidationErrors.AllErrorsOr
+import paint_fun.model.UserValidation.validate
+import paint_fun.model.ValidationErrors._
 import paint_fun.model._
 import paint_fun.routes.Auth
 
@@ -14,7 +15,6 @@ trait UserStorage[F[_]] {
   def save(user: User): F[AllErrorsOr[User]]
   def find(login: String): F[Option[User]]
   def verify(user: User): F[Boolean]
-  def all(): F[List[User]]
 }
 
 object UserStorage {
@@ -29,30 +29,23 @@ class UserStorageImpl[F[_]](implicit
                            ) extends DbConnection[F] with UserStorage[F] {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def save(user: User): F[AllErrorsOr[User]] = {
+  def save(user: User): F[AllErrorsOr[User]] = validate(user) match {
+    case Valid(_) => insert(user)
+    case Invalid(e) => e.invalid[User].pure[F]
+  }
+
+  private def insert(user: User): F[AllErrorsOr[User]] = {
     val pwdHash = Auth.hash(user.password)
-    val unique = sql"select 1 from paint_fun.users where login = ${user.login}".query[Int].option.map {
-      case Some(_) => None
-      case None => Some(1)
+    val query = sql"insert into paint_fun.users (login, name, password_hash) values(${user.login}, ${user.name}, $pwdHash) on conflict do nothing"
+    val res = query.update.run.map {
+      case 0 => UserValidation.loginAlreadyExists
+      case _ => user.validNel
     }
-    val insert = sql"insert into paint_fun.users (login, name, password_hash) values(${user.login}, ${user.name}, $pwdHash)".update.run.as(user)
-
-    val query = OptionT(unique).semiflatMap(_ => insert).value
-    val alreadyExists = ValidationErrors.AlreadyExists(UserValidation.Login)
-    val z = EitherT.fromOptionF[ConnectionIO, ValidationError, User](query, alreadyExists)
-
-    val vld = EitherT.fromEither[F](UserValidation.validate(user).toEither)
-    val exec = () => transactor.use(xa => z.transact(xa).toValidatedNel).map(_.toEither)
-
-    vld.flatMapF(_ => exec()).value.map(_.toValidated)
+    transact(res)
   }
 
   def find(login: String): F[Option[User]] = transact {
     sql"select * from paint_fun.users where login = $login".query[User].option
-  }
-
-  def all(): F[List[User]] = transact {
-    sql"select * from paint_fun.users".query[User].to[List]
   }
 
   def verify(user: User): F[Boolean] = OptionT(transact {
