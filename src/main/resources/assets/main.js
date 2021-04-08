@@ -195,6 +195,7 @@ $("#userRegForm").submit(event => {
 
 const userApi = (function () {
 
+    // todo store / stateful token
     let token = null
 
     let init = (_token) => {
@@ -203,8 +204,21 @@ const userApi = (function () {
 
     let print = () => console.log(token)
 
+    let snapshots = {
+        get: () => {
+
+        },
+        find: (user) => {
+
+        },
+        save: (snapshot) => {
+
+        }
+    }
+
     return {
         init,
-        print
+        print,
+        snapshots
     }
 })()

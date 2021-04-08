@@ -5,14 +5,14 @@ import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import doobie.util.ExecutionContexts
-import org.slf4j.Logger
+import org.slf4j.{Logger, LoggerFactory}
 import paint_fun.config
 
 import scala.concurrent.ExecutionContext
 
 abstract class DbConnection[F[_]](implicit async: Async[F], cs: ContextShift[F]) {
 
-  val logger: Logger
+  val logger: Logger = LoggerFactory.getLogger(getClass)
   private val cfg = config.dbConfig
 
   lazy val transactor: Resource[F, HikariTransactor[F]] = {

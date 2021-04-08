@@ -1,11 +1,8 @@
 package paint_fun.model
 
-import cats.Applicative
 import io.circe._
 import io.circe.generic.semiauto._
 import io.circe.jawn.decode
-import org.http4s.EntityEncoder
-import org.http4s.circe.jsonEncoderOf
 
 final case class BoardStroke(whiteboardId: String, data: BoardStrokeData) {
   def toJson: String = Encoder[BoardStroke].apply(this).noSpaces
@@ -19,8 +16,6 @@ final case class BoardStrokeData(x0: Double, y0: Double, x1: Double, y1: Double,
 
 object BoardStroke {
   implicit val jsonCodec: Codec[BoardStroke] = deriveCodec
-
-  implicit def entityEncoder[F[_] : Applicative]: EntityEncoder[F, BoardStroke] = jsonEncoderOf
 
   def fromJson(text: String): Either[Exception, BoardStroke] = decode(text)
 }

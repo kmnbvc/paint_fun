@@ -5,7 +5,6 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.effect.{Async, ContextShift}
 import cats.implicits._
 import doobie.implicits._
-import org.slf4j.{Logger, LoggerFactory}
 import paint_fun.model.UserValidation.validate
 import paint_fun.model.ValidationErrors._
 import paint_fun.model._
@@ -27,7 +26,6 @@ class UserStorageImpl[F[_]](implicit
                             async: Async[F],
                             cs: ContextShift[F]
                            ) extends DbConnection[F] with UserStorage[F] {
-  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def save(user: User): F[AllErrorsOr[User]] = validate(user) match {
     case Valid(_) => insert(user)
@@ -45,7 +43,9 @@ class UserStorageImpl[F[_]](implicit
   }
 
   def find(login: String): F[Option[User]] = transact {
-    sql"select * from paint_fun.users where login = $login".query[User].option
+    sql"select login, name from paint_fun.users where login = $login".query[(String, String)].map {
+      case (login, name) => User(login, name, "")
+    }.option
   }
 
   def verify(user: User): F[Boolean] = OptionT(transact {

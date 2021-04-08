@@ -6,10 +6,10 @@ CREATE TABLE IF NOT EXISTS `paint_fun`.`users` (
                                        PRIMARY KEY (`login`)
 );
 
-CREATE TABLE IF NOT EXISTS `paint_fun`.`auth_tokens` (
-                                        `id` varchar(36) NOT NULL,
-                                        `identity` varchar(36) NOT NULL,
-                                        `expiry` DATE NOT NULL,
-                                        `lastTouched` DATE DEFAULT NULL,
-                                        PRIMARY KEY (`id`)
+CREATE TABLE IF NOT EXISTS `paint_fun`.`snapshots` (
+                                        `name` text NOT NULL,
+                                        `user` varchar(36) NOT NULL,
+                                        `data` text NOT NULL,
+                                        PRIMARY KEY (`name`),
+                                        FOREIGN KEY (user) REFERENCES paint_fun.users(login)
 );
