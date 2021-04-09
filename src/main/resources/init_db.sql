@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `paint_fun`.`users` (
 );
 
 CREATE TABLE IF NOT EXISTS `paint_fun`.`snapshots` (
-                                        `name` text NOT NULL,
+                                        `name` varchar(36) NOT NULL,
                                         `user` varchar(36) NOT NULL,
                                         `data` text NOT NULL,
                                         PRIMARY KEY (`name`),

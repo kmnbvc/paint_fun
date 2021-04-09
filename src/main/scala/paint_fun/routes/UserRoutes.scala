@@ -11,7 +11,7 @@ import paint_fun.persistence.UserStorage
 
 object UserRoutes {
 
-  def userRoutes[F[_] : Sync](repo: UserStorage[F]): HttpRoutes[F] = {
+  def userRoutes[F[_] : Sync](repo: UserStorage[F], auth: Authenticator[F]): HttpRoutes[F] = {
     val dsl = Http4sDsl[F]
     import dsl._
 
@@ -26,9 +26,8 @@ object UserRoutes {
 
       case req@POST -> Root / "user" / "login" => for {
         user <- req.as[User]
-        valid <- repo.verify(user)
-        resp <- if (valid) Ok(Auth.createToken(user).map(_.toEncodedString))
-          else Forbidden("Invalid credentials")
+        valid <- repo.verifyCredentials(user)
+        resp <- if (valid) auth.embed(Ok(), user) else Forbidden("Invalid credentials")
       } yield resp
     }
   }

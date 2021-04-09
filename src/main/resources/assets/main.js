@@ -133,92 +133,81 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
-})();
+})()
 
 $(document).ready(function () {
-    M.AutoInit();
-});
-
-$('#userRegBtn').click(e => {
-    $('#loginModal').modal('close')
-    $('#userRegModal').modal('open')
+    M.AutoInit()
 })
 
-$('#loginBtn').click(e => {
-    $('#userRegModal').modal('close')
-    $('#loginModal').modal('open')
-})
+const registerForm = () => {
 
-$('#loginModal #submitBtn').click(e => $('#loginForm').submit())
-$('#userRegModal #submitBtn').click(e => $('#userRegForm').submit())
-
-$("#loginForm").submit(event => {
-    event.preventDefault()
-    const data = JSON.stringify(Object.fromEntries(new FormData(event.target)))
-
-    const loginDone = resp => {
-        $('#loginModal').modal('close')
-        M.toast({html: `Logged in. Hello!`})
-        userApi.init(resp)
+    const user = {
+        login: '',
+        name: '',
+        password: ''
     }
 
-    const loginFail = resp => {
-        M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
+    const submit = () => {
+
+        const regDone = resp => {
+            $('#userRegModal').modal('close')
+            M.toast({html: `User created. Hello ${resp.name}!`})
+        }
+
+        const regFail = resp => {
+            const errors = resp.responseJSON
+            if (resp.status === 422 && typeof errors !== 'undefined') {
+                $('#userRegForm input').each((idx, item) => {
+                    const failed = typeof errors[item.name] !== 'undefined'
+                    $(item).toggleClass('invalid', failed).toggleClass('valid', !failed)
+                })
+            } else {
+                M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
+            }
+        }
+
+        $.post("/user/create", JSON.stringify(user)).done(regDone).fail(regFail)
     }
 
-    $.post("/user/login", data).done(loginDone).fail(loginFail)
-})
-
-$("#userRegForm").submit(event => {
-    event.preventDefault()
-    const data = JSON.stringify(Object.fromEntries(new FormData(event.target)))
-
-    const regDone = resp => {
+    const showLoginForm = () => {
         $('#userRegModal').modal('close')
-        M.toast({html: `User created. Hello ${resp.name}!`})
-    }
-
-    const regFail = resp => {
-        const errors = resp.responseJSON
-        if (resp.status === 422 && typeof errors !== 'undefined') {
-            $('#userRegForm input').each((idx, item) => {
-                const failed = typeof errors[item.name] !== 'undefined'
-                $(item).toggleClass('invalid', failed).toggleClass('valid', !failed)
-            })
-        } else {
-            M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
-        }
-    }
-
-    $.post("/user/create", data).done(regDone).fail(regFail)
-})
-
-const userApi = (function () {
-
-    // todo store / stateful token
-    let token = null
-
-    let init = (_token) => {
-        token = _token
-    }
-
-    let print = () => console.log(token)
-
-    let snapshots = {
-        get: () => {
-
-        },
-        find: (user) => {
-
-        },
-        save: (snapshot) => {
-
-        }
+        $('#loginModal').modal('open')
     }
 
     return {
-        init,
-        print,
-        snapshots
+        submit,
+        user,
+        showLoginForm
     }
-})()
+}
+
+const loginForm = () => {
+    const user =  {
+        login: '',
+        password: ''
+    }
+
+    const submit = () => {
+        const loginDone = resp => {
+            $('#loginModal').modal('close')
+            M.toast({html: `Logged in. Hello!`})
+        }
+
+        const loginFail = resp => {
+            M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
+        }
+
+        $.post("/user/login", JSON.stringify(user)).done(loginDone).fail(loginFail)
+    }
+
+    const showRegForm = () => {
+        $('#loginModal').modal('close')
+        $('#userRegModal').modal('open')
+    }
+
+    return {
+        submit,
+        user,
+        showRegForm
+    }
+}

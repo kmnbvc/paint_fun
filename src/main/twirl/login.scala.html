@@ -1,23 +1,23 @@
 @()
 
-<a class="btn-floating btn-large modal-trigger" href="#loginModal">
+<a x-data="{show: true}" x-show="show" class="btn-floating btn-large modal-trigger" href="#loginModal">
     <i class="large material-icons">account_circle</i>
 </a>
 
-<div id="loginModal" class="modal">
+<div id="loginModal" class="modal" x-data="loginForm()">
     <div class="modal-content">
         <h4>Login</h4>
         <div class="row">
-            <form id="loginForm" class="col s12">
+            <form class="col s12">
                 <div class="row">
                     <div class="input-field col s12">
-                        <input id="login" name="login" type="text" class="validate">
+                        <input id="login" name="login" x-model="user.login" type="text" class="validate">
                         <label for="login">Login</label>
                     </div>
                 </div>
                 <div class="row">
                     <div class="input-field col s12">
-                        <input id="password" name="password" type="password" class="validate">
+                        <input id="password" name="password" x-model="user.password" type="password" class="validate">
                         <label for="password">Password</label>
                     </div>
                 </div>
@@ -25,33 +25,33 @@
         </div>
     </div>
     <div class="modal-footer">
-        <a id="userRegBtn" href="#!" class="waves-effect btn left btn-flat">Register</a>
-        <a id="submitBtn" href="#!" class="waves-effect btn">Submit</a>
+        <a x-on:click="showRegForm" href="#!" class="waves-effect btn left btn-flat">Register</a>
+        <a x-on:click="submit" href="#!" class="waves-effect btn">Submit</a>
     </div>
 </div>
 
-<div id="userRegModal" class="modal">
+<div id="userRegModal" class="modal" x-data="registerForm()">
     <div class="modal-content">
         <h4>Register</h4>
         <div class="row">
-            <form id="userRegForm" class="col s12">
+            <form class="col s12">
                 <div class="row">
                     <div class="input-field col s12">
-                        <input id="userRegName" name="name" type="text" class="validate">
+                        <input id="userRegName" name="name" x-model="user.name" type="text" class="validate">
                         <label for="userRegName">Name</label>
                         <span class="helper-text">Your display name. Required, up to 64 characters.</span>
                     </div>
                 </div>
                 <div class="row">
                     <div class="input-field col s12">
-                        <input id="userRegLogin" name="login" type="text" class="validate">
+                        <input id="userRegLogin" name="login" x-model="user.login" type="text" class="validate">
                         <label for="userRegLogin">Login</label>
                         <span class="helper-text">Your login. Required, unique, up to 36 caracters, only 'a-z' letters.</span>
                     </div>
                 </div>
                 <div class="row">
                     <div class="input-field col s12">
-                        <input id="userRegPassword" name="password" type="password" class="validate">
+                        <input id="userRegPassword" name="password" x-model="user.password" type="password" class="validate">
                         <label for="userRegPassword">Password</label>
                         <span class="helper-text">Your password. Required.</span>
                     </div>
@@ -60,7 +60,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <a id="loginBtn" href="#!" class="waves-effect btn left btn-flat">Login</a>
-        <a id="submitBtn" href="#!" class="waves-effect btn">Submit</a>
+        <a x-on:click="showLoginForm" href="#!" class="waves-effect btn left btn-flat">Login</a>
+        <a x-on:click="submit" href="#!" class="waves-effect btn">Submit</a>
     </div>
 </div>

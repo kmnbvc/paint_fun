@@ -13,7 +13,7 @@ import paint_fun.routes.Auth
 trait UserStorage[F[_]] {
   def save(user: User): F[AllErrorsOr[User]]
   def find(login: String): F[Option[User]]
-  def verify(user: User): F[Boolean]
+  def verifyCredentials(user: User): F[Boolean]
 }
 
 object UserStorage {
@@ -48,7 +48,7 @@ class UserStorageImpl[F[_]](implicit
     }.option
   }
 
-  def verify(user: User): F[Boolean] = OptionT(transact {
+  def verifyCredentials(user: User): F[Boolean] = OptionT(transact {
     sql"select password_hash from paint_fun.users where login = ${user.login}".query[String].option
   }).map(Auth.checkPassword(user.password, _)).getOrElse(false)
 }
