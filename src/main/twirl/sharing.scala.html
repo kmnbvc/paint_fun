@@ -1,5 +1,15 @@
 @()
 
-<a x-data="{show: false}" x-show="show" class="btn-floating btn-large">
+<a x-data="{show: true}" x-show="show" class="btn-floating btn-large modal-trigger" href="#sharingModal">
     <i class="large material-icons">share</i>
 </a>
+
+<div id="sharingModal" class="modal">
+    <div class="modal-content">
+        make board accessible by url or only for owner
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="waves-effect btn left btn-flat">Close</a>
+        <a href="#!" class="waves-effect btn">Save</a>
+    </div>
+</div>

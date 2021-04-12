@@ -8,7 +8,7 @@ import doobie.implicits._
 import paint_fun.model.UserValidation.validate
 import paint_fun.model.ValidationErrors._
 import paint_fun.model._
-import paint_fun.routes.Auth
+import paint_fun.routes.Authenticator._
 
 trait UserStorage[F[_]] {
   def save(user: User): F[AllErrorsOr[User]]
@@ -33,7 +33,7 @@ class UserStorageImpl[F[_]](implicit
   }
 
   private def insert(user: User): F[AllErrorsOr[User]] = {
-    val pwdHash = Auth.hash(user.password)
+    val pwdHash = hash(user.password)
     val query = sql"insert into paint_fun.users (login, name, password_hash) values(${user.login}, ${user.name}, $pwdHash) on conflict do nothing"
     val res = query.update.run.map {
       case 0 => UserValidation.loginAlreadyExists
@@ -50,5 +50,5 @@ class UserStorageImpl[F[_]](implicit
 
   def verifyCredentials(user: User): F[Boolean] = OptionT(transact {
     sql"select password_hash from paint_fun.users where login = ${user.login}".query[String].option
-  }).map(Auth.checkPassword(user.password, _)).getOrElse(false)
+  }).map(checkPassword(user.password, _)).getOrElse(false)
 }

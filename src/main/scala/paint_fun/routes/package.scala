@@ -16,6 +16,9 @@ package object routes {
                                                 snapshots: SnapshotStorage[F],
                                                 authenticator: Authenticator[F]
                                               ): HttpRoutes[F] = {
-    assets <+> whiteboardRoutes(boards) <+> userRoutes(users, authenticator) <+> snapshotRoutes(snapshots, authenticator)
+    assets <+>
+      whiteboardRoutes(boards) <+>
+      userRoutes(users, authenticator) <+>
+      snapshotRoutes(snapshots, authenticator)
   }
 }

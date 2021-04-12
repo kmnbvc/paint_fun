@@ -7,7 +7,7 @@ import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.Http4sDsl
 import paint_fun.model.Snapshot
 import paint_fun.persistence.SnapshotStorage
-import paint_fun.routes.Auth._
+import paint_fun.routes.Authenticator._
 import tsec.authentication.{TSecAuthService, asAuthed}
 
 object SnapshotRoutes {

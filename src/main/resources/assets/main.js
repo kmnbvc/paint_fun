@@ -157,9 +157,10 @@ const registerForm = () => {
         const regFail = resp => {
             const errors = resp.responseJSON
             if (resp.status === 422 && typeof errors !== 'undefined') {
-                $('#userRegForm input').each((idx, item) => {
+                $('#userRegModal input').each((idx, item) => {
                     const failed = typeof errors[item.name] !== 'undefined'
                     $(item).toggleClass('invalid', failed).toggleClass('valid', !failed)
+                    if (failed) M.toast({html: `${item.name}: ${errors[item.name]}`})
                 })
             } else {
                 M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
@@ -209,5 +210,30 @@ const loginForm = () => {
         submit,
         user,
         showRegForm
+    }
+}
+
+const userAwareControl = () => {
+    const user = () => {
+        return $.ajax({
+            url: '/user/active',
+            async: false,
+            method: 'GET',
+            dataType: 'json'
+        }).responseText
+    }
+
+    const userLoggedIn = () => {
+        const usr = user()
+        return typeof usr === 'string' && usr.length > 0
+    }
+
+    const userLoggedOut = () => {
+        return !userLoggedIn()
+    }
+
+    return {
+        userLoggedIn,
+        userLoggedOut,
     }
 }
