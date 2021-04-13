@@ -28,10 +28,10 @@ object UserRoutes {
         valid <- repo.verifyCredentials(user)
         resp <- if (valid) auth.embed(Ok(), user) else Forbidden("Invalid credentials")
       } yield resp
-    } <+> authed(auth)
+    }
   }
 
-  def authed[F[_] : Sync](auth: Authenticator[F]): HttpRoutes[F] = {
+  def userAuthedRoutes[F[_] : Sync](auth: Authenticator[F]): HttpRoutes[F] = {
     val dsl = Http4sDsl[F]
     import dsl._
 

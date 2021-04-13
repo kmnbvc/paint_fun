@@ -19,8 +19,9 @@ object SnapshotRoutes {
     val authedService: AuthService[F] = TSecAuthService {
       case GET -> Root / "snapshots" / "list" asAuthed user => Ok(repo.find(user))
 
-      case req@POST -> Root / "snapshots" / "save" asAuthed _ => for {
-        snapshot <- req.request.as[Snapshot]
+      case req@POST -> Root / "snapshots" / "save" asAuthed user => for {
+        body <- req.request.as[Snapshot]
+        snapshot = body.copy(user = user.login)
         result <- repo.save(snapshot)
         resp <- Ok(result)
       } yield resp

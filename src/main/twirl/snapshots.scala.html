@@ -1,9 +1,29 @@
 @()
 
-<a x-show="userLoggedIn" class="btn-floating btn-large">
+<a x-show="userLoggedIn" class="btn-floating btn-large modal-trigger" href="#saveSnapshotModal">
     <i class="large material-icons">save</i>
 </a>
 
-<a x-show="userLoggedIn" class="btn-floating btn-large">
+<a x-show="userLoggedIn" class="btn-floating btn-large modal-trigger" href="#listSnapshotsModal">
     <i class="large material-icons">restore</i>
 </a>
+
+<div id="saveSnapshotModal" class="modal" x-data="snapshotControl()">
+    <div class="modal-content">
+        <h4>Save snapshot</h4>
+        <div class="row">
+            <form class="col s12">
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="name" name="name" x-model="snapshot.name" type="text" class="validate">
+                        <label for="name">Name</label>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="waves-effect btn left btn-flat">Cancel</a>
+        <a x-on:click="save" href="#!" class="waves-effect btn">Submit</a>
+    </div>
+</div>
