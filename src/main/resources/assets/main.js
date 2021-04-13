@@ -183,7 +183,7 @@ const registerForm = () => {
 }
 
 const loginForm = () => {
-    const user =  {
+    const user = {
         login: '',
         password: ''
     }
@@ -192,6 +192,7 @@ const loginForm = () => {
         const loginDone = resp => {
             $('#loginModal').modal('close')
             M.toast({html: `Logged in. Hello!`})
+            document.dispatchEvent(new CustomEvent('login-event', {}))
         }
 
         const loginFail = resp => {
@@ -223,17 +224,16 @@ const userAwareControl = () => {
         }).responseText
     }
 
-    const userLoggedIn = () => {
-        const usr = user()
-        return typeof usr === 'string' && usr.length > 0
-    }
-
-    const userLoggedOut = () => {
-        return !userLoggedIn()
-    }
+    const _user = user()
+    const userLoggedIn = typeof _user === 'string' && _user.length > 0
+    const userLoggedOut = !userLoggedIn
 
     return {
         userLoggedIn,
         userLoggedOut,
+        handleLogin: function () {
+            this.userLoggedIn = true
+            this.userLoggedOut = false
+        }
     }
 }
