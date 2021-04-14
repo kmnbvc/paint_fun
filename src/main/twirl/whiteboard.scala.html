@@ -11,7 +11,7 @@
         <div class="color yellow"></div>
     </div>
 
-    <div x-data="userAwareControl()" @@login-event.document="handleLogin()" class="fixed-action-btn">
+    <div x-data="userAwareControl()" x-init="init" @@login-event.document="handleLogin()" class="fixed-action-btn">
         @html.snapshots()
         @html.sharing()
         @html.login()

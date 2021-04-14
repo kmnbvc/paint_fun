@@ -2,7 +2,6 @@ package paint_fun.routes
 
 import cats.effect.Sync
 import cats.implicits._
-import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.Http4sDsl
 import paint_fun.model.Snapshot
@@ -12,11 +11,11 @@ import tsec.authentication.{TSecAuthService, asAuthed}
 
 object SnapshotRoutes {
 
-  def snapshotRoutes[F[_] : Sync](repo: SnapshotStorage[F], auth: Authenticator[F]): HttpRoutes[F] = {
+  def snapshotRoutes[F[_] : Sync](repo: SnapshotStorage[F]): AuthService[F] = {
     val dsl = Http4sDsl[F]
     import dsl._
 
-    val authedService: AuthService[F] = TSecAuthService {
+    TSecAuthService {
       case GET -> Root / "snapshots" / "list" / boardId asAuthed _ => Ok(repo.find(boardId))
 
       case req@POST -> Root / "snapshots" / "save" asAuthed _ => for {
@@ -27,7 +26,5 @@ object SnapshotRoutes {
 
       case GET -> Root / "snapshots" / "restore" / name asAuthed _ => Ok(name)
     }
-
-    auth.handler.liftService(authedService)
   }
 }

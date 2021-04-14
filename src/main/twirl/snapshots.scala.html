@@ -27,7 +27,11 @@
     </div>
 </div>
 
-<div id="listSnapshotsModal" class="modal" x-data="snapshotControl()">
+<div id="listSnapshotsModal" class="modal modal-fixed-footer"
+    x-data="snapshotControl()"
+    x-init="loadList()"
+    @@login-event.document="loadList()"
+    @@snapshot-event.document="loadList()">
     <div class="modal-content">
         <h4>Snapshots</h4>
         <template x-for="item in list">

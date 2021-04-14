@@ -215,17 +215,17 @@ const loginForm = () => {
 }
 
 const userAwareControl = () => {
-    const result = {
+    return {
         userLoggedIn: false,
         userLoggedOut: true,
 
-        handleLogin: function () {
+        handleLogin() {
             this.userLoggedIn = true
             this.userLoggedOut = false
+        },
+
+        init() {
+            $.getJSON('/user/active').done(this.handleLogin.bind(this))
         }
     }
-
-    $.getJSON('/user/active').done(result.handleLogin)
-
-    return result
 }

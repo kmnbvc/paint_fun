@@ -11,6 +11,7 @@ const snapshotControl = () => {
                     $('.modal.open').modal('close')
                     M.toast({html: `Snapshot created!`})
                     this.snapshot.name = ''
+                    document.dispatchEvent(new CustomEvent('snapshot-event', {}))
                 }
                 const fail = (resp) => {
                     M.toast({html: `Error ${resp.status}: ${resp.statusText}`})

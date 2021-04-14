@@ -4,9 +4,10 @@ import cats.data.OptionT
 import cats.effect.Sync
 import cats.implicits._
 import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
-import org.http4s.{Response, SameSite}
+import org.http4s.{HttpRoutes, Response, SameSite}
 import paint_fun.model.User
 import paint_fun.persistence.UserStorage
+import paint_fun.routes.Authenticator.AuthService
 import tsec.authentication._
 import tsec.cipher.symmetric.IvGen
 import tsec.cipher.symmetric.jca._
@@ -43,6 +44,8 @@ class Authenticator[F[_] : Sync](users: UserStorage[F]) {
   def embed(resp: F[Response[F]], user: User): F[Response[F]] = {
     (resp, authenticator.create(user.login)).mapN(authenticator.embed)
   }
+
+  def lift(svc: AuthService[F]): HttpRoutes[F] = handler.liftService(svc)
 
   //todo: remove
   private def tsecWindowsFix(): Unit = {

@@ -31,14 +31,12 @@ object UserRoutes {
     }
   }
 
-  def userAuthedRoutes[F[_] : Sync](auth: Authenticator[F]): HttpRoutes[F] = {
+  def userAuthedRoutes[F[_] : Sync](): AuthService[F] = {
     val dsl = Http4sDsl[F]
     import dsl._
 
-    val svc: AuthService[F] = TSecAuthService {
+    TSecAuthService {
       case GET -> Root / "user" / "active" asAuthed user => Ok(user)
     }
-
-    auth.handler.liftService(svc)
   }
 }

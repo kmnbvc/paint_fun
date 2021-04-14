@@ -19,7 +19,14 @@ package object routes {
     assets <+>
       whiteboardRoutes(boards) <+>
       userRoutes(users, authenticator) <+>
-      snapshotRoutes(snapshots, authenticator) <+>
-      userAuthedRoutes(authenticator)
+      authed(snapshots, authenticator)
+  }
+
+  def authed[F[_] : Concurrent : ContextShift](
+                                                snapshots: SnapshotStorage[F],
+                                                authenticator: Authenticator[F]
+                                              ): HttpRoutes[F] = {
+    val authedServices = snapshotRoutes(snapshots) <+> userAuthedRoutes()
+    authenticator.lift(authedServices)
   }
 }
