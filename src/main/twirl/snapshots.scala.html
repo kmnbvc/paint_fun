@@ -23,7 +23,21 @@
         </div>
     </div>
     <div class="modal-footer">
-        <a href="#!" class="waves-effect btn left btn-flat">Cancel</a>
-        <a x-on:click="save" href="#!" class="waves-effect btn">Submit</a>
+        <a x-on:click="save" href="#!" class="waves-effect btn">Save</a>
+    </div>
+</div>
+
+<div id="listSnapshotsModal" class="modal" x-data="snapshotControl()">
+    <div class="modal-content">
+        <h4>Snapshots</h4>
+        <template x-for="item in list">
+            <div class="row">
+                <a x-text="item.name" class="waves-effect btn btn-flat"></a>
+            </div>
+        </template>
+        <div x-show="list.length === 0" class="row">No records</div>
+    </div>
+    <div class="modal-footer">
+        <a x-on:click="loadList" href="#!" class="waves-effect btn">Load</a>
     </div>
 </div>

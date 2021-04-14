@@ -7,9 +7,10 @@ CREATE TABLE IF NOT EXISTS `paint_fun`.`users` (
 );
 
 CREATE TABLE IF NOT EXISTS `paint_fun`.`snapshots` (
+                                        `whiteboard_id` varchar(36) NOT NULL,
                                         `name` varchar(36) NOT NULL,
-                                        `user` varchar(36) NOT NULL,
+                                        `user_login` varchar(36) NOT NULL,
                                         `data` text NOT NULL,
-                                        PRIMARY KEY (`name`),
-                                        FOREIGN KEY (user) REFERENCES paint_fun.users(login)
+                                        PRIMARY KEY (`whiteboard_id`, `name`),
+                                        FOREIGN KEY (user_login) REFERENCES paint_fun.users(login)
 );

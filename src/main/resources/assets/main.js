@@ -215,25 +215,17 @@ const loginForm = () => {
 }
 
 const userAwareControl = () => {
-    const user = () => {
-        return $.ajax({
-            url: '/user/active',
-            async: false,
-            method: 'GET',
-            dataType: 'json'
-        }).responseText
-    }
+    const result = {
+        userLoggedIn: false,
+        userLoggedOut: true,
 
-    const _user = user()
-    const userLoggedIn = typeof _user === 'string' && _user.length > 0
-    const userLoggedOut = !userLoggedIn
-
-    return {
-        userLoggedIn,
-        userLoggedOut,
         handleLogin: function () {
             this.userLoggedIn = true
             this.userLoggedOut = false
         }
     }
+
+    $.getJSON('/user/active').done(result.handleLogin)
+
+    return result
 }

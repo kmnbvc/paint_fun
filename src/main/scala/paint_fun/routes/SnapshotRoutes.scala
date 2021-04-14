@@ -17,11 +17,10 @@ object SnapshotRoutes {
     import dsl._
 
     val authedService: AuthService[F] = TSecAuthService {
-      case GET -> Root / "snapshots" / "list" asAuthed user => Ok(repo.find(user))
+      case GET -> Root / "snapshots" / "list" / boardId asAuthed _ => Ok(repo.find(boardId))
 
-      case req@POST -> Root / "snapshots" / "save" asAuthed user => for {
-        body <- req.request.as[Snapshot]
-        snapshot = body.copy(user = user.login)
+      case req@POST -> Root / "snapshots" / "save" asAuthed _ => for {
+        snapshot <- req.request.as[Snapshot]
         result <- repo.save(snapshot)
         resp <- Ok(result)
       } yield resp

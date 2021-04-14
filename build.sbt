@@ -30,7 +30,8 @@ val doobieDependencies = Seq(
   "org.tpolecat" %% "doobie-h2" % "0.10.0",
   "org.tpolecat" %% "doobie-hikari" % "0.10.0",
   "org.tpolecat" %% "doobie-specs2" % "0.10.0",
-  "com.h2database" % "h2" % "1.4.200"
+  "com.h2database" % "h2" % "1.4.200",
+  "org.postgresql" % "postgresql" % "42.2.19"
 )
 
 val testScopeDependencies = Seq(

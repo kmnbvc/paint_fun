@@ -2,11 +2,11 @@ package paint_fun.persistence
 
 import cats.effect.{Concurrent, ContextShift}
 import doobie.implicits.toSqlInterpolator
-import paint_fun.model.{Snapshot, User}
+import paint_fun.model.Snapshot
 
 trait SnapshotStorage[F[_]] {
-  def get(name: String): F[Snapshot]
-  def find(user: User): F[List[Snapshot]]
+  def get(boardId: String, name: String): F[Snapshot]
+  def find(boardId: String): F[List[Snapshot]]
   def save(snapshot: Snapshot): F[Int]
 }
 
@@ -21,16 +21,16 @@ class SnapshotStorageImpl[F[_]](implicit
                                 contextShift: ContextShift[F]
                                ) extends DbConnection[F] with SnapshotStorage[F] {
 
-  def get(name: String): F[Snapshot] = transact {
-    sql"select * from paint_fun.snapshots where name = $name".query[Snapshot].unique
+  def get(boardId: String, name: String): F[Snapshot] = transact {
+    sql"select * from paint_fun.snapshots where name = $name and whiteboard_id = $boardId".query[Snapshot].unique
   }
 
-  def find(user: User): F[List[Snapshot]] = transact {
-    sql"select * from paint_fun.snapshots where user = ${user.login}".query[Snapshot].to[List]
+  def find(boardId: String): F[List[Snapshot]] = transact {
+    sql"select * from paint_fun.snapshots where whiteboard_id = $boardId".query[Snapshot].to[List]
   }
 
   def save(snapshot: Snapshot): F[Int] = transact {
-    val (name, user, data) = (snapshot.name, snapshot.user, snapshot.data)
-    sql"insert into paint_fun.snapshots (name, user, data) values ($name, $user, $data)".update.run
+    val (boardId, name, data) = (snapshot.whiteboardId, snapshot.name, snapshot.data)
+    sql"insert into paint_fun.snapshots (whiteboard_id, name, data) values ($boardId, $name, $data)".update.run
   }
 }
