@@ -36,7 +36,7 @@
         <h4>Snapshots</h4>
         <template x-for="item in list">
             <div class="row">
-                <a x-text="item.name" class="waves-effect btn btn-flat"></a>
+                <a x-text="item.name" :href="`/snapshots/restore/${item.whiteboardId}/${item.name}`" class="waves-effect btn btn-flat"></a>
             </div>
         </template>
         <div x-show="list.length === 0" class="row">No records</div>

@@ -1,4 +1,5 @@
-@(id: String)
+@import paint_fun.model.Snapshot
+@(id: String, snapshot: Option[Snapshot] = None)
 
 @html.main("Whiteboard") {
     <canvas id="wb-canvas" class="whiteboard" data-id="@id"></canvas>
@@ -16,4 +17,7 @@
         @html.sharing()
         @html.login()
     </div>
+
+    <img onload="document.getElementById('wb-canvas').getContext('2d').drawImage(this, 0, 0)"
+        src="@{snapshot.map(_.data).getOrElse("")}" alt="" style="display: none"/>
 }

@@ -17,7 +17,7 @@ package object routes {
                                                 authenticator: Authenticator[F]
                                               ): HttpRoutes[F] = {
     assets <+>
-      whiteboardRoutes(boards) <+>
+      whiteboardRoutes(boards, snapshots) <+>
       userRoutes(users, authenticator) <+>
       authed(snapshots, authenticator)
   }

@@ -8,6 +8,8 @@ trait SnapshotStorage[F[_]] {
   def get(boardId: String, name: String): F[Snapshot]
   def find(boardId: String): F[List[Snapshot]]
   def save(snapshot: Snapshot): F[Int]
+  def linkToRestoreFrom(boardId: String, snapshot: Snapshot): F[Int]
+  def findSnapshotToRestore(boardId: String): F[Option[Snapshot]]
 }
 
 object SnapshotStorage {
@@ -32,5 +34,20 @@ class SnapshotStorageImpl[F[_]](implicit
   def save(snapshot: Snapshot): F[Int] = transact {
     val (boardId, name, data) = (snapshot.whiteboardId, snapshot.name, snapshot.data)
     sql"insert into paint_fun.snapshots (whiteboard_id, name, data) values ($boardId, $name, $data)".update.run
+  }
+
+  def linkToRestoreFrom(boardId: String, snapshot: Snapshot): F[Int] = transact {
+    val query = sql"insert into paint_fun.snapshots_restore_links " ++
+      sql"(whiteboard_id, snapshot_name, snapshot_from) " ++
+      sql"values ($boardId, ${snapshot.name}, ${snapshot.whiteboardId})"
+    query.update.run
+  }
+
+  def findSnapshotToRestore(boardId: String): F[Option[Snapshot]] = transact {
+    val query = sql"select s.* from paint_fun.snapshots s " ++
+      sql"inner join paint_fun.snapshots_restore_links l " ++
+      sql"on (s.name = l.snapshot_name and s.whiteboard_id = l.snapshot_from) " ++
+      sql"where l.whiteboard_id = $boardId"
+    query.query[Snapshot].option
   }
 }

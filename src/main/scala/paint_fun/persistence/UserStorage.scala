@@ -34,7 +34,8 @@ class UserStorageImpl[F[_]](implicit
 
   private def insert(user: User): F[AllErrorsOr[User]] = {
     val pwdHash = hash(user.password)
-    val query = sql"insert into paint_fun.users (login, name, password_hash) values(${user.login}, ${user.name}, $pwdHash) on conflict do nothing"
+    val query = sql"insert into paint_fun.users (login, name, password_hash) " ++
+      sql"values(${user.login}, ${user.name}, $pwdHash) on conflict do nothing"
     val res = query.update.run.map {
       case 0 => UserValidation.loginAlreadyExists
       case _ => user.validNel

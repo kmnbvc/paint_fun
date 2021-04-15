@@ -26,10 +26,6 @@ const snapshotControl = () => {
             canvas.toBlob(this.saveCanvas.bind(this), 'image/png')
         },
 
-        restore() {
-            console.log('restore')
-        },
-
         snapshot: {
             whiteboardId: $('.whiteboard').data('id'),
             name: '',
