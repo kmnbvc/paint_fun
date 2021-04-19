@@ -41,6 +41,8 @@ val testScopeDependencies = Seq(
 
 lazy val root = (project in file("."))
   .enablePlugins(SbtTwirl)
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(JavaAppPackaging)
   .settings(
     organization := "org",
     name := "paint-fun-http4s",
