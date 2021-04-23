@@ -2,7 +2,8 @@ package paint_fun.model
 
 import cats.data.ValidatedNel
 import cats.implicits.catsSyntaxValidatedId
-import paint_fun.model.ValidationErrors._
+import io.circe.{Encoder, Json}
+import paint_fun.model.ValidationError._
 
 object Validation {
   def required(f: Field): String => AllErrorsOr[String] =
@@ -20,19 +21,26 @@ trait Field {
   def name: String = productPrefix.toLowerCase
 }
 
-trait ValidationError {
-  val field: Field
+sealed trait ValidationError {
   def productPrefix: String
-  def name: String = productPrefix
 }
 
-final case class FieldValidation[T](field: Field, validate: T => AllErrorsOr[T])
+sealed trait FieldValidationError extends ValidationError {
+  def field: Field
+}
 
-object ValidationErrors {
-  final case class Required(field: Field) extends ValidationError
-  final case class MaxLengthExceeded(field: Field) extends ValidationError
-  final case class InvalidChars(field: Field) extends ValidationError
-  final case class AlreadyExists(field: Field) extends ValidationError
+object ValidationError {
+  final case class Required(field: Field) extends FieldValidationError
+  final case class MaxLengthExceeded(field: Field) extends FieldValidationError
+  final case class InvalidChars(field: Field) extends FieldValidationError
+  final case class AlreadyExists(field: Field) extends FieldValidationError
+
+  final case object InvalidCredentials extends ValidationError
 
   type AllErrorsOr[T] = ValidatedNel[ValidationError, T]
+
+  implicit val jsonEncoder: Encoder[ValidationError] = {
+    case e: FieldValidationError => Json.obj(e.field.name -> Json.fromString(e.productPrefix))
+    case e => Json.fromString(e.productPrefix)
+  }
 }

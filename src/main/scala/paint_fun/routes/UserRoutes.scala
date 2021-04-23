@@ -20,13 +20,13 @@ object UserRoutes {
       case req@POST -> Root / "user" / "create" => for {
         user <- req.as[User]
         result <- repo.save(user)
-        resp <- result.fold(errs => UnprocessableEntity(errs.groupMap(_.field.name)(_.name)), Ok(_))
+        resp <- result.fold(UnprocessableEntity(_), Ok(_))
       } yield resp
 
       case req@POST -> Root / "user" / "login" => for {
         user <- req.as[User]
-        valid <- repo.verifyCredentials(user)
-        resp <- if (valid) auth.embed(Ok(), user) else Forbidden("Invalid credentials")
+        result <- repo.verifyCredentials(user)
+        resp <- result.fold(Forbidden(_), user => auth.embed(Ok(), user))
       } yield resp
     }
   }

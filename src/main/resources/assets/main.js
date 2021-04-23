@@ -144,17 +144,17 @@ const registerForm = () => {
 
         const regDone = resp => {
             $('#userRegModal').modal('close')
-            M.toast({html: `User created. Hello ${resp.name}!`})
+            M.toast({html: `User created. You can login now as ${resp.name}!`})
         }
 
         const regFail = resp => {
             const errors = resp.responseJSON
-            if (resp.status === 422 && typeof errors !== 'undefined') {
+            if (resp.status === 422 && Array.isArray(errors)) {
                 $('#userRegModal input').each((idx, item) => {
-                    const failed = typeof errors[item.name] !== 'undefined'
+                    const failed = errors.some(e => e.hasOwnProperty(item.name))
                     $(item).toggleClass('invalid', failed).toggleClass('valid', !failed)
-                    if (failed) M.toast({html: `${item.name}: ${errors[item.name]}`})
                 })
+                errors.forEach(e => M.toast({html: `${Object.keys(e)}: ${Object.values(e)}`}))
             } else {
                 M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
             }
@@ -189,7 +189,22 @@ const loginForm = () => {
         }
 
         const loginFail = resp => {
-            M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
+            const errors = resp.responseJSON
+            if (Array.isArray(errors)) {
+                $('#loginModal input').each((idx, item) => {
+                    const failed = errors.some(e => e.hasOwnProperty(item.name))
+                    $(item).toggleClass('invalid', failed).toggleClass('valid', !failed)
+                })
+                errors.forEach(e => {
+                    if (typeof e === 'string') {
+                        M.toast({html: e})
+                    } else {
+                        M.toast({html: `${Object.keys(e)}: ${Object.values(e)}`})
+                    }
+                })
+            } else {
+                M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
+            }
         }
 
         $.post("/user/login", JSON.stringify(user)).done(loginDone).fail(loginFail)

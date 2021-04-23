@@ -2,7 +2,7 @@ package paint_fun.model
 
 import io.circe.Codec
 import io.circe.generic.semiauto.deriveCodec
-import paint_fun.model.ValidationErrors.AllErrorsOr
+import paint_fun.model.ValidationError.AllErrorsOr
 
 final case class Snapshot(whiteboardId: String, name: String, data: String)
 

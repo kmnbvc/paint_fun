@@ -5,7 +5,7 @@ import io.circe.Codec
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto.deriveConfiguredCodec
 import paint_fun.model.Validation._
-import paint_fun.model.ValidationErrors.{AllErrorsOr, AlreadyExists}
+import paint_fun.model.ValidationError._
 
 final case class User(login: String, name: String = "", password: String)
 
@@ -20,15 +20,21 @@ object UserValidation {
   case object Name extends Field
   case object Password extends Field
 
-  val login = FieldValidation(Login, required(Login) |+| maxLength(Login, 36) |+| pattern(Login, "[a-zA-Z]+"))
-  val name = FieldValidation(Name, required(Name) |+| maxLength(Name, 64))
-  val password = FieldValidation(Password, required(Password))
+  val login = required(Login) |+| maxLength(Login, 36) |+| pattern(Login, "[a-zA-Z]+")
+  val name = required(Name) |+| maxLength(Name, 64)
+  val password = required(Password)
+  val credentials = (required(Login), required(Password))
 
   def validate(user: User): AllErrorsOr[User] = {
-    (login.validate(user.login) *>
-      name.validate(user.name) *>
-      password.validate(user.password)).as(user)
+    (login(user.login) *>
+      name(user.name) *>
+      password(user.password)).as(user)
   }
 
   val loginAlreadyExists: AllErrorsOr[User] = AlreadyExists(Login).invalidNel
+  val credentialsNotValid: AllErrorsOr[User] = InvalidCredentials.invalidNel
+
+  def validateCredentials(user: User): AllErrorsOr[User] = {
+    credentials.bifoldMap(_.apply(user.login), _.apply(user.password)).as(user)
+  }
 }

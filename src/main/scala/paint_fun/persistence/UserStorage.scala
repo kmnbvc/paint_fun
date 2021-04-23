@@ -5,15 +5,15 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.effect.{Async, ContextShift}
 import cats.implicits._
 import doobie.implicits._
-import paint_fun.model.UserValidation.validate
-import paint_fun.model.ValidationErrors._
+import paint_fun.model.UserValidation._
+import paint_fun.model.ValidationError._
 import paint_fun.model._
 import paint_fun.routes.Authenticator._
 
 trait UserStorage[F[_]] {
   def save(user: User): F[AllErrorsOr[User]]
   def find(login: String): F[Option[User]]
-  def verifyCredentials(user: User): F[Boolean]
+  def verifyCredentials(user: User): F[AllErrorsOr[User]]
 }
 
 object UserStorage {
@@ -49,7 +49,15 @@ class UserStorageImpl[F[_]](implicit
     }.option
   }
 
-  def verifyCredentials(user: User): F[Boolean] = OptionT(transact {
-    sql"select password_hash from paint_fun.users where login = ${user.login}".query[String].option
-  }).map(checkPassword(user.password, _)).getOrElse(false)
+  def verifyCredentials(user: User): F[AllErrorsOr[User]] = validateCredentials(user) match {
+    case Valid(_) => OptionT {
+      transact {
+        sql"select password_hash from paint_fun.users where login = ${user.login}".query[String].option
+      }
+    }.map(checkPassword(user.password, _))
+      .filter(_ == true)
+      .fold(credentialsNotValid)(_ => user.validNel)
+
+    case Invalid(e) => e.invalid[User].pure[F]
+  }
 }
