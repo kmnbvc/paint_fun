@@ -25,7 +25,7 @@ object SnapshotRoutes {
       case req@POST -> Root / "snapshots" / "save" asAuthed _ => for {
         snapshot <- req.request.as[Snapshot]
         result <- repo.save(snapshot)
-        resp <- Ok(result)
+        resp <- result.fold(UnprocessableEntity(_), Ok(_))
       } yield resp
 
       case GET -> Root / "snapshots" / "restore" / boardId / name asAuthed _ => for {

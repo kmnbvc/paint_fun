@@ -14,7 +14,16 @@ const snapshotControl = () => {
                     document.dispatchEvent(new CustomEvent('snapshot-event', {}))
                 }
                 const fail = (resp) => {
-                    M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
+                    const errors = resp.responseJSON
+                    if (resp.status === 422 && Array.isArray(errors)) {
+                        $('#saveSnapshotModal input').each((idx, item) => {
+                            const failed = errors.some(e => e.hasOwnProperty(item.name))
+                            $(item).toggleClass('invalid', failed).toggleClass('valid', !failed)
+                        })
+                        errors.forEach(e => M.toast({html: `${Object.keys(e)}: ${Object.values(e)}`}))
+                    } else {
+                        M.toast({html: `Error ${resp.status}: ${resp.statusText}`})
+                    }
                 }
 
                 $.post('/snapshots/save', JSON.stringify(this.snapshot)).done(done).fail(fail)
@@ -27,7 +36,7 @@ const snapshotControl = () => {
         },
 
         snapshot: {
-            whiteboardId: $('.whiteboard').data('id'),
+            sourceBoardId: $('.whiteboard').data('id'),
             name: '',
             data: ''
         },

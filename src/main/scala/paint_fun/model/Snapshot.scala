@@ -1,21 +1,31 @@
 package paint_fun.model
 
+import cats.implicits._
 import io.circe.Codec
 import io.circe.generic.semiauto.deriveCodec
-import paint_fun.model.ValidationError.AllErrorsOr
+import paint_fun.model.Validation._
+import paint_fun.model.ValidationError._
 
-final case class Snapshot(whiteboardId: String, name: String, data: String)
+final case class Snapshot(sourceBoardId: String, name: String, data: String)
 
 object Snapshot {
   implicit val jsonCodec: Codec[Snapshot] = deriveCodec
 }
 
 object SnapshotValidation {
-  case object WhiteboardId extends Field
+  case object SourceBoardId extends Field
   case object Name extends Field
   case object Data extends Field
 
-  def validate(snapshot: Snapshot): AllErrorsOr[Snapshot] = ???
+  private val name = required(Name)
+  private val data = required(Data)
+  private val sourceBoardId = required(SourceBoardId)
 
-  val nameAlreadyExists: AllErrorsOr[Snapshot] = ???
+  def validate(snapshot: Snapshot): AllErrorsOr[Snapshot] = {
+    (name(snapshot.name) *>
+      data(snapshot.data) *>
+      sourceBoardId(snapshot.sourceBoardId)).as(snapshot)
+  }
+
+  val nameAlreadyExists: AllErrorsOr[Snapshot] = AlreadyExists(Name).invalidNel
 }
