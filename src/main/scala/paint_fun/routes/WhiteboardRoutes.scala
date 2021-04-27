@@ -1,7 +1,7 @@
 package paint_fun.routes
 
-import cats.implicits._
 import cats.effect.Sync
+import cats.implicits._
 import fs2.{Pipe, Stream}
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
@@ -36,17 +36,12 @@ object WhiteboardRoutes {
         val send: Stream[F, WebSocketFrame] = repo.strokes(id)
           .map(_.toJson)
           .map(WebSocketFrame.Text(_))
-        val receive: Pipe[F, WebSocketFrame, Unit] = stream => {
-          val in = for {
-            frame <- stream if frame.isInstanceOf[WebSocketFrame.Text]
-            json = frame.asInstanceOf[WebSocketFrame.Text].str
-            stroke <- BoardStroke.fromJson(json) match {
-              case Left(ex) => logger.error(ex.getMessage, ex); Stream.empty
-              case Right(value) => Stream(value)
-            }
-          } yield stroke
+        val receive: Pipe[F, WebSocketFrame, Unit] = in => {
+          val strokes = in.collect {
+            case WebSocketFrame.Text(json, _) => Stream.fromEither[F](BoardStroke.fromJson(json))
+          }.flatten
 
-          repo.save(in).drain
+          repo.save(strokes).drain
         }
 
         WebSocketBuilder[F].build(send, receive)
