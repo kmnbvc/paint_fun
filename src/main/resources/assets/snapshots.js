@@ -52,3 +52,12 @@ const snapshotControl = () => {
         }
     }
 }
+
+const snapshotImage = () => {
+    return {
+        draw() {
+            const ctx = document.getElementById('wb-canvas').getContext('2d')
+            ctx.drawImage(this.$el, 0, 0)
+        }
+    }
+}

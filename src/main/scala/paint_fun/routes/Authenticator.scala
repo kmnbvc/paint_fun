@@ -23,9 +23,9 @@ class Authenticator[F[_] : Sync](users: UserStorage[F]) {
   tsecWindowsFix()
 
   val settings: TSecCookieSettings = TSecCookieSettings(
-    cookieName = "tsec-auth-cookie",
+    cookieName = "paint-fun-auth-cookie",
     secure = false,
-    httpOnly = false,
+    httpOnly = true,
     domain = Some("localhost"),
     path = Some("/"),
     sameSite = SameSite.Lax,

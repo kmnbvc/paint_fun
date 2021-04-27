@@ -18,6 +18,5 @@
         @html.login()
     </div>
 
-    <img onload="document.getElementById('wb-canvas').getContext('2d').drawImage(this, 0, 0)"
-        src="@{snapshot.map(_.data).getOrElse("")}" alt="" style="display: none"/>
+    <img x-data="snapshotImage()" x-init="draw" src="@{snapshot.fold("")(_.data)}" alt="" style="display: none"/>
 }
