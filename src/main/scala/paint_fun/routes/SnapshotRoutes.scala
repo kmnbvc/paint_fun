@@ -20,7 +20,7 @@ object SnapshotRoutes {
     import dsl._
 
     TSecAuthService {
-      case GET -> Root / "snapshots" / "list" / boardId asAuthed _ => Ok(repo.find(boardId))
+      case GET -> Root / "snapshots" / "list" / UUIDVar(boardId) asAuthed _ => Ok(repo.find(boardId))
 
       case req@POST -> Root / "snapshots" / "save" asAuthed _ => for {
         snapshot <- req.request.as[Snapshot]
@@ -28,11 +28,11 @@ object SnapshotRoutes {
         resp <- result.fold(UnprocessableEntity(_), Ok(_))
       } yield resp
 
-      case GET -> Root / "snapshots" / "restore" / boardId / name asAuthed _ => for {
+      case GET -> Root / "snapshots" / "restore" / UUIDVar(boardId) / name asAuthed _ => for {
         snapshot <- repo.get(boardId, name)
-        newBoardId = randomUUID().toString
+        newBoardId = randomUUID()
         _ <- repo.linkToRestoreFrom(newBoardId, snapshot)
-        resp <- SeeOther(`Location`(uri"/b" / newBoardId))
+        resp <- SeeOther(`Location`(uri"/b" / newBoardId.toString))
       } yield resp
     }
   }

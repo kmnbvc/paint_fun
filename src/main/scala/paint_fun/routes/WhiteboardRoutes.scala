@@ -27,12 +27,12 @@ object WhiteboardRoutes {
     HttpRoutes.of[F] {
       case GET -> Root => SeeOther(`Location`(uri"/b" / randomUUID().toString))
 
-      case GET -> Root / "b" / id => for {
+      case GET -> Root / "b" / UUIDVar(id) => for {
         snapshot <- snapshots.findSnapshotToRestore(id)
         resp <- Ok(html.whiteboard(id, snapshot))
       } yield resp
 
-      case GET -> Root / "ws" / id =>
+      case GET -> Root / "ws" / UUIDVar(id) =>
         val send: Stream[F, WebSocketFrame] = repo.strokes(id)
           .map(_.toJson)
           .map(WebSocketFrame.Text(_))

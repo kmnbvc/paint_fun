@@ -1,5 +1,6 @@
 @import paint_fun.model.Snapshot
-@(id: String, snapshot: Option[Snapshot] = None)
+@import java.util.UUID
+@(id: UUID, snapshot: Option[Snapshot] = None)
 
 @html.main("Whiteboard") {
     <canvas id="wb-canvas" class="whiteboard" data-id="@id"></canvas>

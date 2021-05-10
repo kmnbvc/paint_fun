@@ -12,8 +12,10 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import paint_fun.config
 import paint_fun.model.{BoardStroke, BoardStrokeData}
 
+import java.util.UUID
+
 trait WhiteboardStorage[F[_]] {
-  def strokes(boardId: String): Stream[F, BoardStroke]
+  def strokes(boardId: UUID): Stream[F, BoardStroke]
   def save(in: Stream[F, BoardStroke]): Stream[F, String]
 }
 
@@ -25,7 +27,7 @@ object WhiteboardStorage {
 
 class WhiteboardStorageImpl[F[_]](implicit
                                   concurrent: Concurrent[F],
-                                  contextShift: ContextShift[F]
+                                  cs: ContextShift[F]
                                  ) extends WhiteboardStorage[F] {
 
   implicit val logger: Logger[F] = Slf4jLogger.getLogger[F]
@@ -36,10 +38,10 @@ class WhiteboardStorageImpl[F[_]](implicit
   private lazy val client = RedisClient[F].from(cfg.url)
   private lazy val streaming = client.flatMap(RedisStream.mkStreamingConnectionResource(_, codec))
 
-  override def strokes(boardId: String): Stream[F, BoardStroke] = {
+  override def strokes(boardId: UUID): Stream[F, BoardStroke] = {
     for {
       streaming <- Stream.resource(streaming)
-      msg <- streaming.read(Set(cfg.streamKey)) if msg.body.contains(boardId)
+      msg <- streaming.read(Set(cfg.streamKey)) if msg.body.contains(boardId.toString)
       stroke <- fromReadMessage(msg)
     } yield stroke
   }
@@ -53,17 +55,15 @@ class WhiteboardStorageImpl[F[_]](implicit
     } yield res.value
   }
 
-  private def addMessage(stroke: BoardStroke): XAddMessage[String, String] = {
-    XAddMessage(cfg.streamKey, Map(stroke.whiteboardId -> stroke.data.toJson))
-  }
+  private def addMessage(stroke: BoardStroke): XAddMessage[String, String] =
+    XAddMessage(cfg.streamKey, Map(stroke.whiteboardId.toString -> stroke.data.toJson))
 
-  private def fromReadMessage(msg: XReadMessage[String, String]): Stream[F, BoardStroke] = {
+  private def fromReadMessage(msg: XReadMessage[String, String]): Stream[F, BoardStroke] =
     for {
       (id, json) <- Stream.iterable(msg.body)
       data <- BoardStrokeData.fromJson(json) match {
         case Left(ex) => logger.error(ex)(ex.getMessage); Stream.empty
-        case Right(value) => Stream(value)
+        case Right(value) => Stream.emit(value)
       }
-    } yield BoardStroke(id, data)
-  }
+    } yield BoardStroke(UUID.fromString(id), data)
 }

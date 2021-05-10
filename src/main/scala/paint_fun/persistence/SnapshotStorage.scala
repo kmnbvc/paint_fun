@@ -4,17 +4,21 @@ import cats.data.Validated._
 import cats.effect.{Concurrent, ContextShift}
 import cats.implicits._
 import doobie.hikari.HikariTransactor
-import doobie.implicits.{toSqlInterpolator, _}
+import doobie.implicits._
+import doobie.postgres.implicits.UuidType
+import doobie.util.meta.Meta
 import paint_fun.model.SnapshotValidation.validate
 import paint_fun.model.ValidationError.AllErrorsOr
-import paint_fun.model.{Snapshot, SnapshotValidation}
+import paint_fun.model._
+
+import java.util.UUID
 
 trait SnapshotStorage[F[_]] {
-  def get(boardId: String, name: String): F[Snapshot]
-  def find(boardId: String): F[List[Snapshot]]
+  def get(boardId: UUID, name: String): F[Snapshot]
+  def find(boardId: UUID): F[List[Snapshot]]
   def save(snapshot: Snapshot): F[AllErrorsOr[Snapshot]]
-  def linkToRestoreFrom(boardId: String, snapshot: Snapshot): F[Int]
-  def findSnapshotToRestore(boardId: String): F[Option[Snapshot]]
+  def linkToRestoreFrom(boardId: UUID, snapshot: Snapshot): F[Int]
+  def findSnapshotToRestore(boardId: UUID): F[Option[Snapshot]]
 }
 
 object SnapshotStorage {
@@ -25,16 +29,16 @@ object SnapshotStorage {
 
 class SnapshotStorageImpl[F[_]](implicit
                                 concurrent: Concurrent[F],
-                                contextShift: ContextShift[F],
+                                cs: ContextShift[F],
                                 xa: HikariTransactor[F]
                                ) extends SnapshotStorage[F] {
 
-  def get(boardId: String, name: String): F[Snapshot] = {
+  def get(boardId: UUID, name: String): F[Snapshot] = {
     sql"select * from paint_fun.snapshots where name = $name and source_board_id = $boardId"
       .query[Snapshot].unique.transact(xa)
   }
 
-  def find(boardId: String): F[List[Snapshot]] = {
+  def find(boardId: UUID): F[List[Snapshot]] = {
     sql"select * from paint_fun.snapshots where source_board_id = $boardId"
       .query[Snapshot].to[List].transact(xa)
   }
@@ -55,18 +59,20 @@ class SnapshotStorageImpl[F[_]](implicit
     res.transact(xa)
   }
 
-  def linkToRestoreFrom(boardId: String, snapshot: Snapshot): F[Int] = {
+  def linkToRestoreFrom(boardId: UUID, snapshot: Snapshot): F[Int] = {
     val sql = sql"insert into paint_fun.snapshots_restore_links " ++
       sql"(whiteboard_id, snapshot_name, snapshot_from) " ++
       sql"values ($boardId, ${snapshot.name}, ${snapshot.sourceBoardId})"
     sql.update.run.transact(xa)
   }
 
-  def findSnapshotToRestore(boardId: String): F[Option[Snapshot]] = {
+  def findSnapshotToRestore(boardId: UUID): F[Option[Snapshot]] = {
     val sql = sql"select s.* from paint_fun.snapshots s " ++
       sql"inner join paint_fun.snapshots_restore_links l " ++
       sql"on (s.name = l.snapshot_name and s.source_board_id = l.snapshot_from) " ++
       sql"where l.whiteboard_id = $boardId"
     sql.query[Snapshot].option.transact(xa)
   }
+
+  locally(Meta[UUID]) // keeps implicit import
 }

@@ -6,7 +6,9 @@ import io.circe.generic.semiauto.deriveCodec
 import paint_fun.model.Validation._
 import paint_fun.model.ValidationError._
 
-final case class Snapshot(sourceBoardId: String, name: String, data: String)
+import java.util.UUID
+
+final case class Snapshot(sourceBoardId: UUID, name: String, data: String)
 
 object Snapshot {
   implicit val jsonCodec: Codec[Snapshot] = deriveCodec
@@ -24,7 +26,7 @@ object SnapshotValidation {
   def validate(snapshot: Snapshot): AllErrorsOr[Snapshot] = {
     (name(snapshot.name) *>
       data(snapshot.data) *>
-      sourceBoardId(snapshot.sourceBoardId)).as(snapshot)
+      sourceBoardId(snapshot.sourceBoardId.toString)).as(snapshot)
   }
 
   val nameAlreadyExists: AllErrorsOr[Snapshot] = AlreadyExists(Name).invalidNel

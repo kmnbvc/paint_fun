@@ -4,7 +4,9 @@ import io.circe._
 import io.circe.generic.semiauto._
 import io.circe.jawn.decode
 
-final case class BoardStroke(whiteboardId: String, data: BoardStrokeData) {
+import java.util.UUID
+
+final case class BoardStroke(whiteboardId: UUID, data: BoardStrokeData) {
   def toJson: String = Encoder[BoardStroke].apply(this).noSpaces
   override def toString: String = toJson
 }

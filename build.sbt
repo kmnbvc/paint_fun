@@ -4,6 +4,7 @@ val MunitVersion = "0.7.20"
 val LogbackVersion = "1.2.3"
 val MunitCatsEffectVersion = "0.13.0"
 val Redis4catsVersion = "0.12.0"
+val DoobieVersion = "0.12.1"
 
 val http4sDependencies = Seq(
   "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
@@ -26,12 +27,13 @@ val redisDependencies = Seq(
 )
 
 val doobieDependencies = Seq(
-  "org.tpolecat" %% "doobie-core" % "0.10.0",
-  "org.tpolecat" %% "doobie-h2" % "0.10.0",
-  "org.tpolecat" %% "doobie-hikari" % "0.10.0",
-  "org.tpolecat" %% "doobie-specs2" % "0.10.0",
+  "org.tpolecat" %% "doobie-core" % DoobieVersion,
+  "org.tpolecat" %% "doobie-h2" % DoobieVersion,
+  "org.tpolecat" %% "doobie-hikari" % DoobieVersion,
+  "org.tpolecat" %% "doobie-specs2" % DoobieVersion,
+  "org.tpolecat" %% "doobie-postgres" % DoobieVersion,
+  "org.postgresql" % "postgresql" % "42.2.19",
   "com.h2database" % "h2" % "1.4.200",
-  "org.postgresql" % "postgresql" % "42.2.19"
 )
 
 val testScopeDependencies = Seq(

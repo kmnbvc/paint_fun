@@ -26,7 +26,7 @@ package object routes {
                                                 snapshots: SnapshotStorage[F],
                                                 authenticator: Authenticator[F]
                                               ): HttpRoutes[F] = {
-    val authedServices = snapshotRoutes(snapshots) <+> userAuthedRoutes()
-    authenticator.lift(authedServices)
+    val svc = snapshotRoutes(snapshots) <+> userAuthedRoutes()
+    authenticator.lift(svc)
   }
 }
