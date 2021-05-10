@@ -20,15 +20,15 @@ trait WhiteboardStorage[F[_]] {
 }
 
 object WhiteboardStorage {
-  implicit def apply[F[_] : WhiteboardStorage]: WhiteboardStorage[F] = implicitly
+  def apply[F[_] : WhiteboardStorage]: WhiteboardStorage[F] = implicitly
 
   def instance[F[_] : Concurrent : ContextShift]: WhiteboardStorage[F] = new WhiteboardStorageImpl[F]
 }
 
-class WhiteboardStorageImpl[F[_]](implicit
-                                  concurrent: Concurrent[F],
-                                  cs: ContextShift[F]
-                                 ) extends WhiteboardStorage[F] {
+private class WhiteboardStorageImpl[F[_]](implicit
+                                          concurrent: Concurrent[F],
+                                          cs: ContextShift[F]
+                                         ) extends WhiteboardStorage[F] {
 
   implicit val logger: Logger[F] = Slf4jLogger.getLogger[F]
 
@@ -41,8 +41,8 @@ class WhiteboardStorageImpl[F[_]](implicit
   override def strokes(boardId: UUID): Stream[F, BoardStroke] = {
     for {
       streaming <- Stream.resource(streaming)
-      msg <- streaming.read(Set(cfg.streamKey)) if msg.body.contains(boardId.toString)
-      stroke <- fromReadMessage(msg)
+      msg <- streaming.read(Set(streamKey(boardId)))
+      stroke <- readMessage(msg)
     } yield stroke
   }
 
@@ -55,15 +55,17 @@ class WhiteboardStorageImpl[F[_]](implicit
     } yield res.value
   }
 
-  private def addMessage(stroke: BoardStroke): XAddMessage[String, String] =
-    XAddMessage(cfg.streamKey, Map(stroke.whiteboardId.toString -> stroke.data.toJson))
+  private def addMessage(stroke: BoardStroke): XAddMessage[String, String] = {
+    XAddMessage(streamKey(stroke.whiteboardId), Map(stroke.whiteboardId.toString -> stroke.data.toJson))
+  }
 
-  private def fromReadMessage(msg: XReadMessage[String, String]): Stream[F, BoardStroke] =
+  private def readMessage(msg: XReadMessage[String, String]): Stream[F, BoardStroke] = {
     for {
       (id, json) <- Stream.iterable(msg.body)
-      data <- BoardStrokeData.fromJson(json) match {
-        case Left(ex) => logger.error(ex)(ex.getMessage); Stream.empty
-        case Right(value) => Stream.emit(value)
-      }
-    } yield BoardStroke(UUID.fromString(id), data)
+      data <- Stream.fromEither(BoardStrokeData.fromJson(json))
+      res = BoardStroke(UUID.fromString(id), data)
+    } yield res
+  }
+
+  private def streamKey(boardId: UUID): String = s"${cfg.streamKey}-${boardId.toString}"
 }

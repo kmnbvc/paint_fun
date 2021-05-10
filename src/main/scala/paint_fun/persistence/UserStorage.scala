@@ -23,11 +23,11 @@ object UserStorage {
   def instance[F[_] : Async : ContextShift : HikariTransactor]: UserStorage[F] = new UserStorageImpl[F]
 }
 
-class UserStorageImpl[F[_]](implicit
-                            async: Async[F],
-                            cs: ContextShift[F],
-                            xa: HikariTransactor[F]
-                           ) extends UserStorage[F] {
+private class UserStorageImpl[F[_]](implicit
+                                    async: Async[F],
+                                    cs: ContextShift[F],
+                                    xa: HikariTransactor[F]
+                                   ) extends UserStorage[F] {
 
   def save(user: User): F[AllErrorsOr[User]] = validate(user) match {
     case Valid(_) => insert(user)

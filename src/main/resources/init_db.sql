@@ -13,18 +13,18 @@ CREATE TABLE IF NOT EXISTS `paint_fun`.`snapshots` (
                                         PRIMARY KEY (`source_board_id`, `name`)
 );
 
-CREATE TABLE IF NOT EXISTS `paint_fun`.`snapshots_restore_links` (
+CREATE TABLE IF NOT EXISTS `paint_fun`.`whiteboards` (
                                         `whiteboard_id` uuid NOT NULL,
                                         `snapshot_name` varchar(36) NOT NULL,
-                                        `snapshot_from` uuid NOT NULL,
+                                        `snapshot_source_id` uuid NOT NULL,
                                         PRIMARY KEY (`whiteboard_id`),
-                                        FOREIGN KEY (`snapshot_name`, `snapshot_from`) REFERENCES `paint_fun`.`snapshots`(`name`, `source_board_id`)
+                                        FOREIGN KEY (`snapshot_name`, `snapshot_source_id`) REFERENCES `paint_fun`.`snapshots`(`name`, `source_board_id`)
 );
 
-CREATE TABLE IF NOT EXISTS `paint_fun`.`whiteboard_sharing_options` (
+CREATE TABLE IF NOT EXISTS `paint_fun`.`whiteboards_access` (
                                         `whiteboard_id` uuid NOT NULL,
-                                        `created_by` varchar(36) NOT NULL,
+                                        `whiteboard_owner` varchar(36) NOT NULL,
                                         `access_type` varchar(36) NOT NULL,
                                         PRIMARY KEY (`whiteboard_id`),
-                                        FOREIGN KEY (`created_by`) REFERENCES `paint_fun`.`users`(`login`)
+                                        FOREIGN KEY (`whiteboard_owner`) REFERENCES `paint_fun`.`users`(`login`)
 );

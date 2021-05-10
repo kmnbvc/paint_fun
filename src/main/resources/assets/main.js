@@ -23,7 +23,8 @@
     }
 
     connection.onmessage = function (event) {
-        onDrawingEvent(JSON.parse(event.data).data)
+        const data = JSON.parse(event.data).data
+        drawLine(data, false, true)
     }
 
     const canvas = document.getElementById('wb-canvas')
@@ -50,32 +51,8 @@
         colors[i].addEventListener('click', onColorUpdate, false)
     }
 
-    window.addEventListener('resize', onResize, false)
+    window.addEventListener('resize', debounce(onResize, 500), false)
     onResize()
-
-
-    function drawLine(x0, y0, x1, y1, color, emit) {
-        context.beginPath()
-        context.moveTo(x0, y0)
-        context.lineTo(x1, y1)
-        context.strokeStyle = color
-        context.lineWidth = 2
-        context.stroke()
-        context.closePath()
-
-        const w = canvas.width
-        const h = canvas.height
-        const data = {
-            x0: x0 / w,
-            y0: y0 / h,
-            x1: x1 / w,
-            y1: y1 / h,
-            color: color
-        }
-        strokes.push(data)
-
-        if (emit) send(data)
-    }
 
     function onMouseDown(e) {
         drawing = true
@@ -88,20 +65,64 @@
             return
         }
         drawing = false
-        drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, current.color, true)
+        drawLine(getData(e), true, true)
     }
 
     function onMouseMove(e) {
         if (!drawing) {
             return
         }
-        drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, current.color, true)
+        drawLine(getData(e), true, true)
         current.x = e.clientX || e.touches[0].clientX
         current.y = e.clientY || e.touches[0].clientY
     }
 
     function onColorUpdate(e) {
         current.color = e.target.className.split(' ')[1]
+    }
+
+    function onResize() {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+        strokes.forEach(s => drawLine(s, false, false))
+    }
+
+    function getData(e) {
+        const w = canvas.width
+        const h = canvas.height
+        return {
+            x0: current.x / w,
+            y0: current.y / h,
+            x1: (e.clientX || e.touches[0].clientX) / w,
+            y1: (e.clientY || e.touches[0].clientY) / h,
+            color: current.color
+        }
+    }
+
+    function drawLine(data, emit, cache) {
+        const {x0, y0, x1, y1} = scaleToCanvas(data)
+        context.beginPath()
+        context.moveTo(x0, y0)
+        context.lineTo(x1, y1)
+        context.strokeStyle = data.color
+        context.lineWidth = 2
+        context.stroke()
+        context.closePath()
+
+        if (cache) strokes.push(data)
+        if (emit) send(data)
+    }
+
+    function scaleToCanvas(data) {
+        const w = canvas.width
+        const h = canvas.height
+        return {
+            x0: data.x0 * w,
+            y0: data.y0 * h,
+            x1: data.x1 * w,
+            y1: data.y1 * h,
+            color: data.color
+        }
     }
 
     function throttle(callback, delay) {
@@ -116,16 +137,13 @@
         }
     }
 
-    function onDrawingEvent(data) {
-        const w = canvas.width
-        const h = canvas.height
-        drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color)
-    }
-
-    function onResize() {
-        canvas.width = window.innerWidth
-        canvas.height = window.innerHeight
-        strokes.forEach(s => onDrawingEvent(s))
+    function debounce(func, time) {
+        let _time = time || 100
+        let timer
+        return function (event) {
+            if (timer) clearTimeout(timer)
+            timer = setTimeout(func, _time, event)
+        }
     }
 })()
 

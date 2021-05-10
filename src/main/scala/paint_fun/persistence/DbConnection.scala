@@ -9,7 +9,7 @@ import paint_fun.config
 
 import scala.concurrent.ExecutionContext
 
-final class DbConnection[F[_]](implicit async: Async[F], cs: ContextShift[F]) {
+final class DbConnection[F[_] : Async : ContextShift] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
   private val cfg = config.dbConfig
@@ -33,5 +33,5 @@ final class DbConnection[F[_]](implicit async: Async[F], cs: ContextShift[F]) {
 }
 
 object DbConnection {
-  def apply[F[_] : Async : ContextShift] = new DbConnection[F]()
+  def apply[F[_] : Async : ContextShift] = new DbConnection[F]
 }
