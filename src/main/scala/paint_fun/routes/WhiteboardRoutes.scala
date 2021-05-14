@@ -28,7 +28,7 @@ object WhiteboardRoutes {
       case GET -> Root => SeeOther(`Location`(uri"/b" / randomUUID().toString))
 
       case GET -> Root / "b" / UUIDVar(id) => for {
-        snapshot <- snapshots.findSnapshotToRestore(id)
+        snapshot <- snapshots.findRestoredFrom(id)
         resp <- Ok(html.whiteboard(id, snapshot))
       } yield resp
 

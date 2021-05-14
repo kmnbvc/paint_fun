@@ -21,10 +21,12 @@ CREATE TABLE IF NOT EXISTS `paint_fun`.`whiteboards` (
                                         FOREIGN KEY (`snapshot_name`, `snapshot_source_id`) REFERENCES `paint_fun`.`snapshots`(`name`, `source_board_id`)
 );
 
+CREATE TYPE `paint_fun`.`access_type_enum` AS ENUM('owner_only', 'anyone');
+
 CREATE TABLE IF NOT EXISTS `paint_fun`.`whiteboards_access` (
                                         `whiteboard_id` uuid NOT NULL,
                                         `whiteboard_owner` varchar(36) NOT NULL,
-                                        `access_type` varchar(36) NOT NULL,
+                                        `access_type` `paint_fun`.`access_type_enum` NOT NULL,
                                         PRIMARY KEY (`whiteboard_id`),
                                         FOREIGN KEY (`whiteboard_owner`) REFERENCES `paint_fun`.`users`(`login`)
 );

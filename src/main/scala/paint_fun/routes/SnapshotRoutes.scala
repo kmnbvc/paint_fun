@@ -11,8 +11,6 @@ import paint_fun.persistence.SnapshotStorage
 import paint_fun.routes.Authenticator._
 import tsec.authentication.{TSecAuthService, asAuthed}
 
-import java.util.UUID.randomUUID
-
 object SnapshotRoutes {
 
   def snapshotRoutes[F[_] : Sync](repo: SnapshotStorage[F]): AuthService[F] = {
@@ -30,8 +28,7 @@ object SnapshotRoutes {
 
       case GET -> Root / "snapshots" / "restore" / UUIDVar(boardId) / name asAuthed _ => for {
         snapshot <- repo.get(boardId, name)
-        newBoardId = randomUUID()
-        _ <- repo.linkToRestoreFrom(newBoardId, snapshot)
+        newBoardId <- repo.restore(snapshot)
         resp <- SeeOther(`Location`(uri"/b" / newBoardId.toString))
       } yield resp
     }

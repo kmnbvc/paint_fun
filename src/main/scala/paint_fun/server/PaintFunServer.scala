@@ -16,8 +16,9 @@ object PaintFunServer {
       val boards = WhiteboardStorage.instance[F]
       val users = UserStorage.instance[F]
       val snapshots = SnapshotStorage.instance[F]
+      val access = WhiteboardAccessStorage.instance[F]
       val authenticator = new Authenticator[F](users)
-      val app = routes(boards, users, snapshots, authenticator).orNotFound
+      val app = routes(boards, users, snapshots, authenticator, access).orNotFound
       val appFinal = Logger.httpApp(logHeaders = true, logBody = true)(app)
 
       BlazeServerBuilder[F](global)

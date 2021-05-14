@@ -17,8 +17,8 @@ trait SnapshotStorage[F[_]] {
   def get(boardId: UUID, name: String): F[Snapshot]
   def find(boardId: UUID): F[List[Snapshot]]
   def save(snapshot: Snapshot): F[AllErrorsOr[Snapshot]]
-  def linkToRestoreFrom(boardId: UUID, snapshot: Snapshot): F[Int]
-  def findSnapshotToRestore(boardId: UUID): F[Option[Snapshot]]
+  def restore(snapshot: Snapshot): F[UUID]
+  def findRestoredFrom(boardId: UUID): F[Option[Snapshot]]
 }
 
 object SnapshotStorage {
@@ -61,14 +61,15 @@ private class SnapshotStorageImpl[F[_]](implicit
     res.transact(xa)
   }
 
-  def linkToRestoreFrom(boardId: UUID, snapshot: Snapshot): F[Int] = {
+  def restore(snapshot: Snapshot): F[UUID] = {
+    val boardId = UUID.randomUUID()
     val sql = sql"insert into paint_fun.whiteboards " ++
       sql"(whiteboard_id, snapshot_name, snapshot_source_id) " ++
       sql"values ($boardId, ${snapshot.name}, ${snapshot.sourceBoardId})"
-    sql.update.run.transact(xa)
+    sql.update.run.transact(xa).as(boardId)
   }
 
-  def findSnapshotToRestore(boardId: UUID): F[Option[Snapshot]] = {
+  def findRestoredFrom(boardId: UUID): F[Option[Snapshot]] = {
     val sql = sql"select s.* from paint_fun.snapshots s " ++
       sql"inner join paint_fun.whiteboards l " ++
       sql"on (s.name = l.snapshot_name and s.source_board_id = l.snapshot_source_id) " ++
