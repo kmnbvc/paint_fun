@@ -26,7 +26,7 @@ const snapshotControl = () => {
                     }
                 }
 
-                $.post('/snapshots/save', JSON.stringify(this.snapshot)).done(done).fail(fail)
+                $.post('/private/snapshots/save', JSON.stringify(this.snapshot)).done(done).fail(fail)
             }
         },
 
@@ -45,7 +45,7 @@ const snapshotControl = () => {
 
         loadList() {
             const boardId = $('.whiteboard').data('id')
-            $.getJSON(`/snapshots/list/${boardId}`).then(data => {
+            $.getJSON(`/private/snapshots/list/${boardId}`).then(data => {
                 this.list.length = 0
                 this.list.push(...data)
             })

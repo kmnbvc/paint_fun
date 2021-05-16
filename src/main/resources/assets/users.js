@@ -26,7 +26,7 @@ const registerForm = () => {
             }
         }
 
-        $.post("/user/create", JSON.stringify(user)).done(regDone).fail(regFail)
+        $.post("/public/user/create", JSON.stringify(user)).done(regDone).fail(regFail)
     }
 
     const showLoginForm = () => {
@@ -73,7 +73,7 @@ const loginForm = () => {
             }
         }
 
-        $.post("/user/login", JSON.stringify(user)).done(loginDone).fail(loginFail)
+        $.post("/public/user/login", JSON.stringify(user)).done(loginDone).fail(loginFail)
     }
 
     const showRegForm = () => {
@@ -99,7 +99,7 @@ const userAwareControl = () => {
         },
 
         init() {
-            $.getJSON('/user/active').done(this.handleLogin.bind(this))
+            $.getJSON('/private/user/active').done(this.handleLogin.bind(this))
         }
     }
 }

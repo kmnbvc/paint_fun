@@ -7,7 +7,7 @@ import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
 import org.http4s.{HttpRoutes, Response, SameSite}
 import paint_fun.model.User
 import paint_fun.persistence.UserStorage
-import paint_fun.routes.Authenticator.AuthService
+import paint_fun.routes.Authenticator.{AuthService, UserAwareSvc}
 import tsec.authentication._
 import tsec.cipher.symmetric.IvGen
 import tsec.cipher.symmetric.jca._
@@ -47,6 +47,8 @@ class Authenticator[F[_] : Sync](users: UserStorage[F]) {
 
   def lift(svc: AuthService[F]): HttpRoutes[F] = handler.liftService(svc)
 
+  def liftUserAware(svc: UserAwareSvc[F]): HttpRoutes[F] = handler.liftUserAware(svc)
+
   //todo: remove
   private def tsecWindowsFix(): Unit = {
     try {
@@ -64,7 +66,9 @@ class Authenticator[F[_] : Sync](users: UserStorage[F]) {
 }
 
 object Authenticator {
-  type AuthService[F[_]] = TSecAuthService[User, AuthEncryptedCookie[AES128GCM, String], F]
+  type AuthCookie = AuthEncryptedCookie[AES128GCM, String]
+  type UserAwareSvc[F[_]] = UserAwareService[User, AuthCookie, F]
+  type AuthService[F[_]] = TSecAuthService[User, AuthCookie, F]
 
   private val defaultIterations = 10000
   private val random = new SecureRandom()

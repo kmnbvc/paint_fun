@@ -17,7 +17,7 @@ object WhiteboardAccessRoutes {
     TSecAuthService {
       case GET -> Root / "access" / "init" / "owner-only" asAuthed user => for {
         uuid <- repo.create(user)
-        resp <- SeeOther(`Location`(uri"/b" / uuid.toString))
+        resp <- SeeOther(`Location`(uri"/board/b" / uuid.toString))
       } yield resp
     }
   }

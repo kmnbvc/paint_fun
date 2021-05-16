@@ -29,7 +29,7 @@ object SnapshotRoutes {
       case GET -> Root / "snapshots" / "restore" / UUIDVar(boardId) / name asAuthed _ => for {
         snapshot <- repo.get(boardId, name)
         newBoardId <- repo.restore(snapshot)
-        resp <- SeeOther(`Location`(uri"/b" / newBoardId.toString))
+        resp <- SeeOther(`Location`(uri"/board/b" / newBoardId.toString))
       } yield resp
     }
   }

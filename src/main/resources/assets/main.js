@@ -9,7 +9,7 @@
 
     const connectionUrl = function () {
         const id = $('.whiteboard').data('id')
-        return "ws://localhost:9000/ws/" + id
+        return "ws://localhost:9000/board/ws/" + id
     }
 
     const connection = new WebSocket(connectionUrl())
