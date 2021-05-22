@@ -8,12 +8,21 @@
     <i class="large material-icons">share</i>
 </a>
 
-<div id="sharingModal" class="modal">
+<div id="sharingModal" class="modal" x-data="sharingControl()" x-init="loadState()" @@login-event.document="loadState()">
     <div class="modal-content">
-        make board accessible by url or only for owner
+        <div class="row">
+            <form class="col s12">
+                <label for="accessType">Access type</label>
+                <select id="accessType" x-model="selected" class="browser-default">
+                    <option x-bind:selected="selected === ''">Default</option>
+                    <template x-for="item in accessTypes">
+                        <option x-bind:value="item" x-text="item" x-bind:selected="item === selected"></option>
+                    </template>
+                </select>
+            </form>
+        </div>
     </div>
     <div class="modal-footer">
-        <a href="#!" class="waves-effect btn left btn-flat">Close</a>
-        <a href="#!" class="waves-effect btn">Save</a>
+        <a x-on:click="save" href="#!" class="waves-effect btn">Save</a>
     </div>
 </div>
