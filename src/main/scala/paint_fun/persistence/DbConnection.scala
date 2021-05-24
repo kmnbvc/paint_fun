@@ -1,37 +1,28 @@
 package paint_fun.persistence
 
-import cats.effect.{Async, Blocker, ContextShift, Resource}
+import cats.effect._
 import com.zaxxer.hikari.HikariConfig
+import doobie.Transactor
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
-import org.slf4j.{Logger, LoggerFactory}
 import paint_fun.config
 
-import scala.concurrent.ExecutionContext
+object DbConnection {
 
-final class DbConnection[F[_] : Async : ContextShift] {
-
-  val logger: Logger = LoggerFactory.getLogger(getClass)
   private val cfg = config.dbConfig
 
-  lazy val transactor: Resource[F, HikariTransactor[F]] = {
-    for {
-      ec <- ExecutionContexts.fixedThreadPool[F](cfg.threadPoolSize)
-      be <- Blocker[F]
-      xa <- createTransactor(ec, be)
-    } yield xa
-  }
+  def transactor[F[_] : Async : ContextShift]: Resource[F, Transactor[F]] = for {
+    ec <- ExecutionContexts.fixedThreadPool[F](cfg.threadPoolSize)
+    be <- Blocker[F]
+    xa <- HikariTransactor.fromHikariConfig(hikariConfig(), ec, be)
+  } yield xa
 
-  private def createTransactor(ec: ExecutionContext, be: Blocker): Resource[F, HikariTransactor[F]] = {
+  private def hikariConfig(): HikariConfig = {
     val config = new HikariConfig()
     config.setDriverClassName(cfg.driver)
     config.setJdbcUrl(cfg.connectionUrl)
     config.setUsername(cfg.username)
     config.setPassword(cfg.password)
-    HikariTransactor.fromHikariConfig(config, ec, be)
+    config
   }
-}
-
-object DbConnection {
-  def apply[F[_] : Async : ContextShift] = new DbConnection[F]
 }

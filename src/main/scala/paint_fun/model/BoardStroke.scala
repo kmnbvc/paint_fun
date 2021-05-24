@@ -8,12 +8,10 @@ import java.util.UUID
 
 final case class BoardStroke(whiteboardId: UUID, data: BoardStrokeData) {
   def toJson: String = Encoder[BoardStroke].apply(this).noSpaces
-  override def toString: String = toJson
 }
 
 final case class BoardStrokeData(x0: Double, y0: Double, x1: Double, y1: Double, color: String) {
   def toJson: String = Encoder[BoardStrokeData].apply(this).noSpaces
-  override def toString: String = toJson
 }
 
 object BoardStroke {

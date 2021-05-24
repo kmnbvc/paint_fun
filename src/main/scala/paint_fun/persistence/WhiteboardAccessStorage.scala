@@ -3,7 +3,7 @@ package paint_fun.persistence
 import cats.data.OptionT
 import cats.effect._
 import cats.implicits._
-import doobie.hikari.HikariTransactor
+import doobie.Transactor
 import doobie.implicits._
 import doobie.postgres.implicits
 import doobie.util.meta.Meta
@@ -20,50 +20,44 @@ trait WhiteboardAccessStorage[F[_]] {
 }
 
 object WhiteboardAccessStorage {
-  def apply[F[_] : WhiteboardAccessStorage]: WhiteboardAccessStorage[F] = implicitly
-
-  def instance[F[_] : HikariTransactor : BracketThrow]: WhiteboardAccessStorage[F] = new WhiteboardAccessStorageImpl[F]
-}
-
-private class WhiteboardAccessStorageImpl[F[_] : BracketThrow](implicit
-                                                               xa: HikariTransactor[F]
-                                                              ) extends WhiteboardAccessStorage[F] {
   implicit val uuidMeta: Meta[UUID] = implicits.UuidType
 
-  def create(user: User): F[UUID] = {
-    val uuid = UUID.randomUUID()
-    set(uuid, OwnerOnly, user).as(uuid)
-  }
-
-  def permitted(boardId: UUID, user: Option[User]): F[Boolean] = {
-    val sql = sql"select whiteboard_owner, access_type from paint_fun.whiteboards_access where whiteboard_id = $boardId"
-    val data = sql.query[(String, AccessType)].option.transact(xa)
-
-    OptionT(data).fold(true) {
-      case (_, Anyone) => true
-      case (owner, OwnerOnly) => user.exists(_.login == owner)
-      case _ => false
+  def apply[F[_] : BracketThrow](xa: Transactor[F]): WhiteboardAccessStorage[F] = new WhiteboardAccessStorage[F] {
+    def create(user: User): F[UUID] = {
+      val uuid = UUID.randomUUID()
+      set(uuid, OwnerOnly, user).as(uuid)
     }
-  }
 
-  def state(boardId: UUID): F[Map[AccessType, Boolean]] = {
-    val sql = sql"select access_type from paint_fun.whiteboards_access where whiteboard_id = $boardId"
-    val stored = sql.query[AccessType].option.transact(xa)
-    List(Anyone, OwnerOnly).traverse { t =>
-      stored.map(t -> _.contains(t))
-    }.map(_.toMap)
-  }
+    def permitted(boardId: UUID, user: Option[User]): F[Boolean] = {
+      val sql = sql"select whiteboard_owner, access_type from paint_fun.whiteboards_access where whiteboard_id = $boardId"
+      val data = sql.query[(String, AccessType)].option.transact(xa)
 
-  def set(boardId: UUID, accessType: AccessType, user: User): F[Unit] = {
-    val insert = sql"insert into paint_fun.whiteboards_access " ++
-      sql"(whiteboard_id, whiteboard_owner, access_type) " ++
-      sql"values ($boardId, ${user.login}, $accessType) "
+      OptionT(data).fold(true) {
+        case (_, Anyone) => true
+        case (owner, OwnerOnly) => user.exists(_.login == owner)
+        case _ => false
+      }
+    }
 
-    val update = sql"update paint_fun.whiteboards_access set access_type = $accessType where whiteboard_id = $boardId"
+    def state(boardId: UUID): F[Map[AccessType, Boolean]] = {
+      val sql = sql"select access_type from paint_fun.whiteboards_access where whiteboard_id = $boardId"
+      val stored = sql.query[AccessType].option.transact(xa)
+      List(Anyone, OwnerOnly).traverse { t =>
+        stored.map(t -> _.contains(t))
+      }.map(_.toMap)
+    }
 
-    val select = sql"select 1 from paint_fun.whiteboards_access " ++
-      sql"where whiteboard_id = $boardId and whiteboard_owner = ${user.login}"
+    def set(boardId: UUID, accessType: AccessType, user: User): F[Unit] = {
+      val insert = sql"insert into paint_fun.whiteboards_access " ++
+        sql"(whiteboard_id, whiteboard_owner, access_type) " ++
+        sql"values ($boardId, ${user.login}, $accessType) "
 
-    select.query[Int].option.flatMap(_.fold(insert)(_ => update).update.run).transact(xa).void
+      val update = sql"update paint_fun.whiteboards_access set access_type = $accessType where whiteboard_id = $boardId"
+
+      val select = sql"select 1 from paint_fun.whiteboards_access " ++
+        sql"where whiteboard_id = $boardId and whiteboard_owner = ${user.login}"
+
+      select.query[Int].option.flatMap(_.fold(insert)(_ => update).update.run).transact(xa).void
+    }
   }
 }

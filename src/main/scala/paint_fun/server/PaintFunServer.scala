@@ -12,11 +12,11 @@ import scala.concurrent.ExecutionContext.global
 
 object PaintFunServer {
   def run[F[_] : ConcurrentEffect : Timer : ContextShift]: Resource[F, Stream[F, ExitCode]] = {
-    DbConnection[F].transactor.map { implicit xa =>
-      val boards = WhiteboardStorage.instance[F]
-      val users = UserStorage.instance[F]
-      val snapshots = SnapshotStorage.instance[F]
-      val access = WhiteboardAccessStorage.instance[F]
+    DbConnection.transactor[F].map { xa =>
+      val boards = WhiteboardStorage[F]
+      val users = UserStorage[F](xa)
+      val snapshots = SnapshotStorage[F](xa)
+      val access = WhiteboardAccessStorage[F](xa)
       val authenticator = new Authenticator[F](users)
       val app = routes(boards, users, snapshots, authenticator, access).orNotFound
       val appFinal = Logger.httpApp(logHeaders = true, logBody = true)(app)

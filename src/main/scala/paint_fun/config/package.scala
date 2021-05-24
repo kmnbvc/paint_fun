@@ -3,7 +3,7 @@ package paint_fun
 import com.typesafe.config.{Config, ConfigFactory}
 
 package object config {
-  val config: Config = ConfigFactory.load()
+  private val config: Config = ConfigFactory.load()
   val redisConfig: RedisConfig = RedisConfig(config.getConfig("redis"))
   val dbConfig: DatabaseConfig = DatabaseConfig(config.getConfig("database"))
 

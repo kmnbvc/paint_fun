@@ -20,10 +20,10 @@ object UserValidation {
   case object Name extends Field
   case object Password extends Field
 
-  val login = required(Login) |+| maxLength(Login, 36) |+| pattern(Login, "[a-zA-Z]+")
-  val name = required(Name) |+| maxLength(Name, 64)
-  val password = required(Password)
-  val credentials = (required(Login), required(Password))
+  private val login = required(Login) |+| maxLength(Login, 36) |+| pattern(Login, "[a-zA-Z]+")
+  private val name = required(Name) |+| maxLength(Name, 64)
+  private val password = required(Password)
+  private val credentials = (required(Login), required(Password))
 
   def validate(user: User): AllErrorsOr[User] = {
     (login(user.login) *>
