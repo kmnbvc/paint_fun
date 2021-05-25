@@ -51,7 +51,7 @@ lazy val root = (project in file("."))
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.13.4",
     libraryDependencies ++= Seq(
-      "com.typesafe" % "config" % "1.4.1",
+      "com.github.pureconfig" %% "pureconfig" % "0.15.0",
       "ch.qos.logback" % "logback-classic" % LogbackVersion
     ),
     libraryDependencies ++= Seq(

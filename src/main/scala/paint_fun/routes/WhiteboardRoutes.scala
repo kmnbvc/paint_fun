@@ -8,15 +8,12 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.websocket.WebSocketBuilder
 import org.http4s.twirl._
 import org.http4s.websocket.WebSocketFrame
-import org.slf4j.LoggerFactory
 import paint_fun.model.BoardStroke
 import paint_fun.persistence._
 import paint_fun.routes.Authenticator.UserAwareSvc
 import tsec.authentication.{UserAwareService, asAware}
 
 object WhiteboardRoutes {
-
-  private val logger = LoggerFactory.getLogger(getClass)
 
   def whiteboardRoutes[F[_] : Sync](
                                      repo: WhiteboardStorage[F],

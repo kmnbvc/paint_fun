@@ -9,7 +9,7 @@ import paint_fun.config
 
 object DbConnection {
 
-  private val cfg = config.dbConfig
+  private val cfg = config.database
 
   def transactor[F[_] : Async : ContextShift]: Resource[F, Transactor[F]] = for {
     ec <- ExecutionContexts.fixedThreadPool[F](cfg.threadPoolSize)

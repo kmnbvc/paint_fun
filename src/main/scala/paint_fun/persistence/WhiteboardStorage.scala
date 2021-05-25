@@ -24,7 +24,7 @@ object WhiteboardStorage {
     implicit val logger: Logger[F] = Slf4jLogger.getLogger[F]
 
     private val codec = RedisCodec.Utf8
-    private val cfg = config.redisConfig
+    private val cfg = config.redis
 
     private val client = RedisClient[F].from(cfg.url)
     private val streaming = client.flatMap(RedisStream.mkStreamingConnectionResource(_, codec))

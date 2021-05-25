@@ -1,33 +1,14 @@
 package paint_fun
 
-import com.typesafe.config.{Config, ConfigFactory}
+import pureconfig._
+import pureconfig.generic.auto._
 
 package object config {
-  private val config: Config = ConfigFactory.load()
-  val redisConfig: RedisConfig = RedisConfig(config.getConfig("redis"))
-  val dbConfig: DatabaseConfig = DatabaseConfig(config.getConfig("database"))
-
-
+  final case class ServiceConfig(database: DatabaseConfig, redis: RedisConfig)
   final case class RedisConfig(url: String, streamKey: String)
+  final case class DatabaseConfig(driver: String, connectionUrl: String, username: String, password: String, threadPoolSize: Int)
 
-  object RedisConfig {
-    def apply(cfg: Config): RedisConfig = RedisConfig(cfg.getString("url"),
-      cfg.getString("stream.key"))
-  }
-
-  final case class DatabaseConfig(driver: String,
-                                  connectionUrl: String,
-                                  username: String,
-                                  password: String,
-                                  threadPoolSize: Int)
-
-  object DatabaseConfig {
-    def apply(cfg: Config): DatabaseConfig =
-      DatabaseConfig(cfg.getString("driver"),
-        cfg.getString("connection-url"),
-        cfg.getString("username"),
-        cfg.getString("password"),
-        cfg.getInt("thread-pool-size"))
-  }
-
+  private val cfg = ConfigSource.default.loadOrThrow[ServiceConfig]
+  val redis: RedisConfig = cfg.redis
+  val database: DatabaseConfig = cfg.database
 }
